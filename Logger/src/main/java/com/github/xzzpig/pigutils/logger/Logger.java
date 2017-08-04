@@ -32,10 +32,6 @@ public class Logger {
 		}
 	}
 
-	private LogLevel logLevel;
-	private List<LogPrinter> logPrinters;
-	private LogFormater logFormater;
-
 	/**
 	 * 获取Logger对象<br/>
 	 * 按如下顺序初始化Logger对象:<br/>
@@ -157,21 +153,43 @@ public class Logger {
 			logger.addLogPrinter(LogPrinter.getPrinter("Console"));
 		return logger;
 	}
+	private LogFormater logFormater;
+	private LogLevel logLevel;
 
-	private void init(LogConfig config, AnnotatedElement element) {
-		if (logLevel == null && !config.level().equalsIgnoreCase("extened")) {
-			logLevel = LogLevel.getLevel(config.level());
-		}
-		if (logFormater == null && !config.formater().equalsIgnoreCase("extened")) {
-			logFormater = LogFormater.getFormater(config.formater());
-			if (logFormater != null)
-				logFormater.element = element;
-		}
-		if (logPrinters == null && config.printer().length != 0) {
-			for (String sPrinter : config.printer()) {
-				addLogPrinter(LogPrinter.getPrinter(sPrinter));
-			}
-		}
+	private List<LogPrinter> logPrinters;
+
+	private Logger() {
+	}
+
+	public Logger addLogPrinter(LogPrinter printer) {
+		if (logPrinters == null)
+			logPrinters = new ArrayList<>();
+		logPrinters.add(printer);
+		return this;
+	}
+
+	public Logger debug(Object... objs) {
+		return log(LogLevel.DEBUG, objs);
+	}
+
+	public Logger error(Object... objs) {
+		return log(LogLevel.ERROR, objs);
+	}
+
+	public Logger fatal(Object... objs) {
+		return log(LogLevel.FATAL, objs);
+	}
+
+	public LogFormater getLogFormater() {
+		return logFormater;
+	}
+
+	public LogLevel getLogLevel() {
+		return logLevel;
+	}
+
+	public Logger info(Object... objs) {
+		return log(LogLevel.INFO, objs);
 	}
 
 	private void init(JSONObject config) {
@@ -194,31 +212,20 @@ public class Logger {
 		}
 	}
 
-	private Logger() {
-	}
-
-	public LogLevel getLogLevel() {
-		return logLevel;
-	}
-
-	public Logger setLogLevel(LogLevel logLevel) {
-		this.logLevel = logLevel;
-		return this;
-	}
-
-	public Logger addLogPrinter(LogPrinter printer) {
-		if (logPrinters == null)
-			logPrinters = new ArrayList<>();
-		logPrinters.add(printer);
-		return this;
-	}
-
-	public LogFormater getLogFormater() {
-		return logFormater;
-	}
-
-	public void setLogFormater(LogFormater logFormater) {
-		this.logFormater = logFormater;
+	private void init(LogConfig config, AnnotatedElement element) {
+		if (logLevel == null && !config.level().equalsIgnoreCase("extened")) {
+			logLevel = LogLevel.getLevel(config.level());
+		}
+		if (logFormater == null && !config.formater().equalsIgnoreCase("extened")) {
+			logFormater = LogFormater.getFormater(config.formater());
+			if (logFormater != null)
+				logFormater.element = element;
+		}
+		if (logPrinters == null && config.printer().length != 0) {
+			for (String sPrinter : config.printer()) {
+				addLogPrinter(LogPrinter.getPrinter(sPrinter));
+			}
+		}
 	}
 
 	private boolean isInited() {
@@ -231,5 +238,18 @@ public class Logger {
 		String log = logFormater.format(logFormater.element, level, logFormater.config, objs);
 		logPrinters.forEach(p -> p.print(log));
 		return this;
+	}
+
+	public void setLogFormater(LogFormater logFormater) {
+		this.logFormater = logFormater;
+	}
+
+	public Logger setLogLevel(LogLevel logLevel) {
+		this.logLevel = logLevel;
+		return this;
+	}
+
+	public Logger warn(Object... objs) {
+		return log(LogLevel.WARN, objs);
 	}
 }

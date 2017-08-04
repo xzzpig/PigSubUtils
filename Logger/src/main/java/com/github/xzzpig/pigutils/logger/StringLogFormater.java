@@ -41,16 +41,6 @@ public class StringLogFormater extends LogFormater {
 	}
 
 	@Override
-	public String getName() {
-		return "String";
-	}
-
-	@Override
-	public boolean march(AnnotatedElement element, Object... objs) {
-		return true;
-	}
-
-	@Override
 	public String format(AnnotatedElement element, LogLevel level, JSONObject config, Object... objs) {
 		String str = "[%date(yyyy-MM-dd HH:mm:ss)%] [%level%] %log%";
 		if (element != null && element.isAnnotationPresent(StringFormatTemplate.class))
@@ -82,5 +72,15 @@ public class StringLogFormater extends LogFormater {
 			}
 		}
 		return str;
+	}
+
+	@Override
+	public String getName() {
+		return "String";
+	}
+
+	@Override
+	public boolean march(AnnotatedElement element, Object... objs) {
+		return true;
 	}
 }

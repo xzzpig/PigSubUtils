@@ -14,7 +14,7 @@ import java.lang.annotation.Retention;
 public @interface LogConfig {
 	String formater() default "extened";
 
-	String[] printer() default {};
-
 	String level() default "extended";
+
+	String[] printer() default {};
 }

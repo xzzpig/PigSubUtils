@@ -29,16 +29,16 @@ public abstract class LogFormater {
 		return null;
 	}
 
-	AnnotatedElement element;
 	JSONObject config;
+	AnnotatedElement element;
 	
 	public LogFormater() {
 	}
 
+	public abstract String format(AnnotatedElement element, LogLevel level, JSONObject config, Object... objs);
+
 	public abstract String getName();
 
 	public abstract boolean march(AnnotatedElement element, Object... objs);
-
-	public abstract String format(AnnotatedElement element, LogLevel level, JSONObject config, Object... objs);
 
 }
