@@ -238,4 +238,13 @@ public class ClassUtils<T> {
 		ClassUtils<?> cu = new ClassUtils<>(clazz);
 		cu.checkConstructorArgs(args);
 	}
+
+	public static Class<?> getStackClass(int i) {
+		StackTraceElement stack = new Exception().getStackTrace()[i];
+		try {
+			return Class.forName(stack.getClassName());
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
 }
