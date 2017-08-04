@@ -1,0 +1,9 @@
+repositories {
+    jcenter()
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    compile project(':Other')
+    compile project(':Event')
+}
