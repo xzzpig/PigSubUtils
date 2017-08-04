@@ -22,7 +22,7 @@ public class Logger {
 	static {
 		LogFormater.addFormater(new StringLogFormater());
 		LogPrinter.addPrinter(new ConsoleLogPrinter());
-		File config = new File(new File(""), "logconfig.json");
+		File config = new File("logconfig.json");
 		if (config.exists() && config.isFile()) {
 			try {
 				projectLoggerConfig = new JSONObject(new JSONTokener(new FileInputStream(config)));

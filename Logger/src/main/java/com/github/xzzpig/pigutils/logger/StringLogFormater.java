@@ -34,7 +34,7 @@ public class StringLogFormater extends LogFormater {
 		 * 
 		 * @return 格式化模板
 		 */
-		String value() default "[%date(yyyy-MM-dd HH:mm:ss)%] [%level%] %log%";
+		String value() default "[%date(yyyy-MM-dd HH:mm:ss)%] [%level%] %log%\n";
 	}
 
 	public StringLogFormater() {
