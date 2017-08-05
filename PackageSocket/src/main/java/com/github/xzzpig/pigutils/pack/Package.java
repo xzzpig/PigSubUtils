@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 import com.github.xzzpig.pigutils.annoiation.NotNull;
@@ -49,7 +50,16 @@ public class Package {
 	Package() {
 	}
 
-	public Package(@Nullable String type, @Nullable byte[] data) {
+	public Package(@Nullable String type, @NotNull String data) {
+		this.type = type;
+		try {
+			this.data = data.getBytes("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			this.data = data.getBytes();
+		}
+	}
+
+	public Package(@Nullable String type, @NotNull byte[] data) {
 		this(type, data, data.length);
 	}
 
@@ -60,6 +70,14 @@ public class Package {
 
 	public @NotNull byte[] getData() {
 		return data == null ? new byte[0] : data;
+	}
+
+	public @NotNull String getStringData() {
+		try {
+			return new String(getData(), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			return new String(getData());
+		}
 	}
 
 	public int getSize() {
