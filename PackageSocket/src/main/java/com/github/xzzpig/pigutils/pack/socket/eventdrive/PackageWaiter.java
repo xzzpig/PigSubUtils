@@ -8,8 +8,12 @@ import com.github.xzzpig.pigutils.pack.Package;
 
 public class PackageWaiter {
 
-	EventAdapter socket;
 	AtomicReference<Package> pack = new AtomicReference<>();
+	EventAdapter socket;
+
+	private Thread thread;
+
+	private String type;
 
 	public PackageWaiter(EDPackageSocketClient client) {
 		this.socket = client;
@@ -19,9 +23,16 @@ public class PackageWaiter {
 		this.socket = server;
 	}
 
-	private String type;
+	private void onPackage(PackageSocketPackageEvent event) {
+		if (event.getPackage().getType().equals(type)) {
+			pack.set(event.getPackage());
+			thread.interrupt();
+		}
+	}
 
-	private Thread thread;
+	public synchronized Package waitForPackage(String type) {
+		return waitForPackage(type, -1);
+	}
 
 	public synchronized Package waitForPackage(String type, int timeout) {
 		this.type = type;
@@ -48,17 +59,6 @@ public class PackageWaiter {
 		pack.set(null);
 		socket.unregRunner(runner::equals);
 		return p;
-	}
-
-	public synchronized Package waitForPackage(String type) {
-		return waitForPackage(type, -1);
-	}
-
-	private void onPackage(PackageSocketPackageEvent event) {
-		if (event.getPackage().getType().equals(type)) {
-			pack.set(event.getPackage());
-			thread.interrupt();
-		}
 	}
 
 }

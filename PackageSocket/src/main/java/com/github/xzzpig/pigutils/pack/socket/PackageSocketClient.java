@@ -13,14 +13,18 @@ public abstract class PackageSocketClient extends PackageSocket implements Runna
 	private final String ip;
 	private final int port;
 
-	private Thread thread;
 	private AtomicBoolean started;
+	private Thread thread;
 
 	public PackageSocketClient(@NotNull String ip, int port) {
 		ClassUtils.checkThisConstructorArgs(ip, port);
 		this.ip = ip;
 		this.port = port;
 		this.started = new AtomicBoolean(false);
+	}
+
+	public synchronized boolean isStarted() {
+		return started.get();
 	}
 
 	public abstract void onClose();
@@ -60,9 +64,5 @@ public abstract class PackageSocketClient extends PackageSocket implements Runna
 	}
 
 	public void stop() {
-	}
-
-	public synchronized boolean isStarted() {
-		return started.get();
 	}
 }

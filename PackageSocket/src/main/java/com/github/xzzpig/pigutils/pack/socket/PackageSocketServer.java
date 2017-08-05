@@ -14,13 +14,13 @@ import com.github.xzzpig.pigutils.pack.Package;
 
 public abstract class PackageSocketServer implements Runnable {
 
-	ServerSocket ss;
+	private List<PackageSocket> packageSockets;
 
+	private Map<PackageSocket, Thread> packThreads;
 	private final int port;
+	ServerSocket ss;
 	private AtomicBoolean started;
 	private Thread thread;
-	private List<PackageSocket> packageSockets;
-	private Map<PackageSocket, Thread> packThreads;
 
 	public PackageSocketServer(@NotNull int port) {
 		this.port = port;

@@ -81,6 +81,11 @@ public class Package {
 		return bs;
 	}
 
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + "{" + getType() + ":" + Arrays.toString(getData()) + "}";
+	}
+
 	public Package write(OutputStream out) throws IOException {
 		int typeSize = getType().length();
 		out.write(int2Bytes(typeSize));
@@ -88,10 +93,5 @@ public class Package {
 		out.write(int2Bytes(getSize()));
 		out.write(getData());
 		return this;
-	}
-
-	@Override
-	public String toString() {
-		return getClass().getSimpleName() + "{" + getType() + ":" + Arrays.toString(getData()) + "}";
 	}
 }

@@ -14,6 +14,11 @@ public class EDPackageSocketClient extends PackageSocketClient implements EventA
 	}
 
 	@Override
+	public EventBus getEventBus() {
+		return bus;
+	}
+
+	@Override
 	public void onClose() {
 		bus.callEvent(new PackageSocketCloseEvent(this));
 	}
@@ -31,11 +36,6 @@ public class EDPackageSocketClient extends PackageSocketClient implements EventA
 	@Override
 	public void onPackage(Package pack) {
 		bus.callEvent(new PackageSocketPackageEvent(this, pack));
-	}
-
-	@Override
-	public EventBus getEventBus() {
-		return bus;
 	}
 
 	public synchronized void waitForStarted(int timeOut) {

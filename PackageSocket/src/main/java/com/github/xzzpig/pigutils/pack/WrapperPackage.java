@@ -14,6 +14,11 @@ public class WrapperPackage extends Package {
 	protected WrapperPackage() {
 	}
 
+	public WrapperPackage(@NotNull Package pack) {
+		ClassUtils.checkThisConstructorArgs(pack);
+		this.pack = pack;
+	}
+
 	public WrapperPackage(@Nullable String type, @Nullable byte[] data) {
 		ByteArrayInputStream bin = new ByteArrayInputStream(data);
 		unWrapPackage(type, bin);
@@ -21,25 +26,6 @@ public class WrapperPackage extends Package {
 			bin.close();
 		} catch (IOException e) {
 		}
-	}
-
-	protected void unWrapPackage(String type, ByteArrayInputStream data) {
-		byte[] bs = new byte[data.available()];
-		try {
-			data.read(bs);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		pack = new Package(type, bs);
-	}
-
-	public WrapperPackage(@NotNull Package pack) {
-		ClassUtils.checkThisConstructorArgs(pack);
-		this.pack = pack;
-	}
-
-	public Package getWrappedPackage() {
-		return pack;
 	}
 
 	@Override
@@ -50,5 +36,19 @@ public class WrapperPackage extends Package {
 	@Override
 	public String getType() {
 		return pack.getType();
+	}
+
+	public Package getWrappedPackage() {
+		return pack;
+	}
+
+	protected void unWrapPackage(String type, ByteArrayInputStream data) {
+		byte[] bs = new byte[data.available()];
+		try {
+			data.read(bs);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		pack = new Package(type, bs);
 	}
 }
