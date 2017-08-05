@@ -60,6 +60,8 @@ public abstract class PackageSocketServer implements Runnable {
 						Package pack = Package.read(socket.getSocket().getInputStream());
 						onPackage(socket, pack);
 					} catch (IOException e) {
+						if (e.getMessage().contains("Connection reset"))
+							break;
 						onError(socket, e);
 					} catch (NegativeArraySizeException e) {
 						break;

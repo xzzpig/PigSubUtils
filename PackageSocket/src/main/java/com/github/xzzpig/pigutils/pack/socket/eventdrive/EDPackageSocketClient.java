@@ -38,4 +38,29 @@ public class EDPackageSocketClient extends PackageSocketClient implements EventA
 		return bus;
 	}
 
+	public synchronized void waitForStarted(int timeOut) {
+		if (isStarted())
+			return;
+		Thread thread = new Thread() {
+			@Override
+			public void run() {
+				if (timeOut > 0)
+					try {
+						Thread.sleep(timeOut);
+					} catch (InterruptedException e) {
+					}
+				else
+					while (!this.isInterrupted())
+						;
+			};
+		};
+		thread.start();
+		this.regRunner((PackageSocketOpenEvent event) -> thread.interrupt());
+		try {
+			thread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
 }

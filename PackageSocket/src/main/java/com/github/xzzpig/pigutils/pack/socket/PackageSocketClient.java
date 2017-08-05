@@ -61,4 +61,8 @@ public abstract class PackageSocketClient extends PackageSocket implements Runna
 
 	public void stop() {
 	}
+
+	public synchronized boolean isStarted() {
+		return started.get();
+	}
 }
