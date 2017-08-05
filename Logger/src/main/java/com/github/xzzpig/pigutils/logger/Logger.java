@@ -60,13 +60,15 @@ public class Logger {
 		Logger logger = new Logger();
 		for (int i = 1; i <= new Exception().getStackTrace().length; i++) {
 			Method m = MethodUtils.getStackMethod(i);
-			if (m.isAnnotationPresent(LogConfig.class)) {
+			if (m != null && m.isAnnotationPresent(LogConfig.class)) {
 				LogConfig logConfig = m.getAnnotation(LogConfig.class);
 				logger.init(logConfig, m);
 			}
 			if (logger.isInited())
 				return logger;
 			Class<?> clazz = ClassUtils.getStackClass(i);
+			if (clazz == null)
+				continue;
 			if (clazz.isAnnotationPresent(LogConfig.class)) {
 				LogConfig logConfig = clazz.getAnnotation(LogConfig.class);
 				logger.init(logConfig, clazz);
@@ -153,6 +155,7 @@ public class Logger {
 			logger.addLogPrinter(LogPrinter.getPrinter("Console"));
 		return logger;
 	}
+
 	private LogFormater logFormater;
 	private LogLevel logLevel;
 
