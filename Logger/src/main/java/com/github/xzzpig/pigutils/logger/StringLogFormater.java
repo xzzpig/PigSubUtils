@@ -61,10 +61,10 @@ public class StringLogFormater extends LogFormater {
 		}
 		str = str.replace("%log%", log + "").replace("%level%", level.getName());
 		String pattern = ".*%date\\((.*)\\)%.*";
-		Pattern r = Pattern.compile(pattern, Pattern.MULTILINE);
+		Pattern r = Pattern.compile(pattern, Pattern.DOTALL);
 		Matcher m = r.matcher(str);
 		Date date = new Date(System.currentTimeMillis());
-		if (m.matches()) {
+		while ((m = r.matcher(str)).matches()) {
 			for (int i = 1; i <= m.groupCount(); i++) {
 				String rows = m.group(i);
 				SimpleDateFormat dateFormat = new SimpleDateFormat(rows);
