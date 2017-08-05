@@ -23,12 +23,18 @@ public class PackageWaiter {
 
 	private Thread thread;
 
-	public synchronized Package waitForPackage(String type) {
+	public synchronized Package waitForPackage(String type, int timeout) {
 		this.type = type;
 		thread = new Thread() {
 			public void run() {
-				while (!this.isInterrupted()) {
-				}
+				if (timeout > 0)
+					try {
+						Thread.sleep(timeout);
+					} catch (InterruptedException e) {
+					}
+				else
+					while (!this.isInterrupted()) {
+					}
 			};
 		};
 		thread.start();
@@ -37,12 +43,15 @@ public class PackageWaiter {
 		try {
 			thread.join();
 		} catch (InterruptedException e) {
-			e.printStackTrace();
 		}
 		Package p = pack.get();
 		pack.set(null);
 		socket.unregRunner(runner::equals);
 		return p;
+	}
+
+	public synchronized Package waitForPackage(String type) {
+		return waitForPackage(type, -1);
 	}
 
 	private void onPackage(PackageSocketPackageEvent event) {
