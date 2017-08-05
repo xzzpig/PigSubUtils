@@ -42,7 +42,7 @@ public class StringLogFormater extends LogFormater {
 
 	@Override
 	public String format(AnnotatedElement element, LogLevel level, JSONObject config, Object... objs) {
-		String str = "[%date(yyyy-MM-dd HH:mm:ss)%] [%level%] %log%";
+		String str = "[%date(yyyy-MM-dd HH:mm:ss)%] [%level%] %log%\n";
 		if (element != null && element.isAnnotationPresent(StringFormatTemplate.class))
 			str = element.getAnnotation(StringFormatTemplate.class).value();
 		else if (config != null && config.has("template")) {
@@ -61,7 +61,7 @@ public class StringLogFormater extends LogFormater {
 		}
 		str = str.replace("%log%", log + "").replace("%level%", level.getName());
 		String pattern = ".*%date\\((.*)\\)%.*";
-		Pattern r = Pattern.compile(pattern,Pattern.MULTILINE);
+		Pattern r = Pattern.compile(pattern, Pattern.MULTILINE);
 		Matcher m = r.matcher(str);
 		Date date = new Date(System.currentTimeMillis());
 		if (m.matches()) {
