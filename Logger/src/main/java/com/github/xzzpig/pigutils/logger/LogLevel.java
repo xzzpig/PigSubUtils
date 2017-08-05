@@ -34,7 +34,7 @@ public class LogLevel {
 		}
 	}
 
-	private String name;
+	public final String name;
 
 	private int level;
 
