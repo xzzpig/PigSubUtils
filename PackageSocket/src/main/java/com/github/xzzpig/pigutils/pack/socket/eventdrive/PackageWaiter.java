@@ -26,7 +26,8 @@ public class PackageWaiter {
 	private void onPackage(PackageSocketPackageEvent event) {
 		if (event.getPackage().getType().equals(type)) {
 			pack.set(event.getPackage());
-			thread.interrupt();
+			if (thread != null && thread.isAlive())
+				thread.interrupt();
 		}
 	}
 
@@ -48,9 +49,10 @@ public class PackageWaiter {
 					}
 			};
 		};
-		thread.start();
 		EventRunner<PackageSocketPackageEvent> runner = this::onPackage;
 		socket.regRunner(runner);
+		thread.setDaemon(true);
+		thread.start();
 		try {
 			thread.join();
 		} catch (InterruptedException e) {

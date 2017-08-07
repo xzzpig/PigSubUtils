@@ -6,10 +6,15 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URI;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -90,6 +95,17 @@ public class ExtendFile extends File {
 			return null;
 	}
 
+	public String text(String charset) {
+		String str = text();
+		if (str == null)
+			return null;
+		try {
+			return new String(str.getBytes(), charset);
+		} catch (UnsupportedEncodingException e) {
+			return null;
+		}
+	}
+
 	public boolean withInputStream(Consumer<InputStream> consumer) {
 		FileInputStream fin = null;
 		try {
@@ -101,7 +117,7 @@ public class ExtendFile extends File {
 		} finally {
 			try {
 				fin.close();
-			} catch (IOException e) {
+			} catch (Exception e) {
 			}
 		}
 	}
@@ -140,5 +156,32 @@ public class ExtendFile extends File {
 			} catch (IOException e) {
 			}
 		}
+	}
+
+	public boolean writeObject(Object object) {
+		AtomicBoolean b = new AtomicBoolean(true);
+		if (!withOutputStream(out -> {
+			try {
+				ObjectOutputStream oout = new ObjectOutputStream(out);
+				oout.writeObject(object);
+			} catch (Exception e) {
+				b.set(false);
+				return;
+			}
+		}, false)) {
+			return false;
+		}
+		return b.get();
+	}
+
+	public Object readObject() {
+		AtomicReference<Object> obj = new AtomicReference<>();
+		withInputStream(in -> {
+			try {
+				obj.set(new ObjectInputStream(in).readObject());
+			} catch (ClassNotFoundException | IOException e) {
+			}
+		});
+		return obj.get();
 	}
 }

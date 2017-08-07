@@ -83,4 +83,9 @@ public class StringLogFormater extends LogFormater {
 	public boolean march(AnnotatedElement element, Object... objs) {
 		return true;
 	}
+	
+	@Override
+	public boolean accept(AnnotatedElement ele) {
+		return ele.isAnnotationPresent(StringFormatTemplate.class);
+	}
 }

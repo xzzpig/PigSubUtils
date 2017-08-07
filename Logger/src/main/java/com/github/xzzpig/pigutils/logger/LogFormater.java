@@ -29,9 +29,6 @@ public abstract class LogFormater {
 		return null;
 	}
 
-	JSONObject config;
-	AnnotatedElement element;
-	
 	public LogFormater() {
 	}
 
@@ -41,4 +38,27 @@ public abstract class LogFormater {
 
 	public abstract boolean march(AnnotatedElement element, Object... objs);
 
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof LogFormater))
+			return false;
+		return this.getName().equals(((LogFormater) obj).getName());
+	}
+
+	/**
+	 * @return 是否替换之后
+	 *         {@link LogFormater#format(AnnotatedElement, LogLevel, JSONObject, Object...)}中的AnnotatedElement
+	 */
+	public boolean accept(AnnotatedElement ele) {
+		return true;
+	}
+
+	/**
+	 * @return 是否替换之后
+	 *         {@link LogFormater#format(AnnotatedElement, LogLevel, JSONObject, Object...)}中的
+	 *         {@link JSONObject}
+	 */
+	public boolean accept(JSONObject ele) {
+		return true;
+	}
 }

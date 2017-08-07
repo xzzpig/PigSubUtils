@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Map;
@@ -79,31 +78,30 @@ public class FileTransferPackage extends WrapperPackage {
 	// Receiver
 	private static void onFileTransferStartPackage(PackageSocket socket, Package pack) {
 		JSONObject json = null;
-		try {
-			json = new JSONObject(new String(pack.getData(),"UTF-8"));
-		} catch (JSONException | UnsupportedEncodingException e1) {
-			e1.printStackTrace();
-		}
+		json = new JSONObject(pack.getStringData());
 		File file = TransformEvent.transform(json, File.class);
 		byte b = 0;
 		if (file != null) {
 			boolean cont = true;
 			if (!file.exists()) {
 				try {
-					file.createNewFile();
+					if (!file.createNewFile())
+						throw new IOException("create " + file.getName() + " failed");
 				} catch (IOException e) {
+					e.printStackTrace();
 					cont = false;
 				}
 			}
-			FileOutputStream fout = null;
-			try {
-				fout = new FileOutputStream(file, false);
-			} catch (FileNotFoundException e) {
-				cont = false;
-			}
 			if (cont) {
-				filemap_Receiver.put(json.getLong("fid"), fout);
-				b = 1;
+				FileOutputStream fout = null;
+				try {
+					fout = new FileOutputStream(file, false);
+					filemap_Receiver.put(json.getLong("fid"), fout);
+					b = 1;
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+					cont = false;
+				}
 			}
 		}
 		Package pack1 = new Package("FileTransferPerparedPackage", new byte[] { b });
@@ -148,12 +146,7 @@ public class FileTransferPackage extends WrapperPackage {
 		filemap_Sender.put(fid, file);
 		fileInfo.put("fid", fid);
 		fileInfo.put("size", file.length());
-		Package pack = null;
-		try {
-			pack = new Package("FileTransferStartPackage", fileInfo.toString().getBytes("UTF-8"));
-		} catch (UnsupportedEncodingException e1) {
-			e1.printStackTrace();
-		}
+		Package pack = new Package("FileTransferStartPackage", fileInfo.toString());
 		socket.send(pack);
 		if (synch) {
 			while (filemap_Sender.containsKey(fid))

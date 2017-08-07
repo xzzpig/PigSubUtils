@@ -37,15 +37,24 @@ public class MD5 {
 		return sBuffer.toString();
 	}
 
+	/**
+	 * 可能会出现文件无法释放的问题<br/>
+	 * 建议调用后手动 {@link System#gc()}
+	 * 
+	 * @throws FileNotFoundException
+	 */
 	public static String GetMD5Code(File file) throws FileNotFoundException {
 		String value = null;
 		FileInputStream in = new FileInputStream(file);
 		try {
-			MappedByteBuffer byteBuffer = in.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+			FileChannel channel = in.getChannel();
+			MappedByteBuffer byteBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, file.length());
 			MessageDigest md5 = MessageDigest.getInstance("MD5");
 			md5.update(byteBuffer);
 			BigInteger bi = new BigInteger(1, md5.digest());
 			value = bi.toString(16);
+			channel.close();
+			byteBuffer = null;
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
