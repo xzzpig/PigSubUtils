@@ -1,6 +1,9 @@
 package com.github.xzzpig.pigutils.database;
 
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -95,16 +98,16 @@ public class Table {
 				key.append(',').append(entry.getKey());
 			Object obj = entry.getValue();
 			String str;
-			if (obj.getClass() == DBFieldType.Blob.targetClazz) {
-				objs.add(obj);
-				str = "?";
-			} else if (obj.getClass() == DBFieldType.Int.targetClazz) {
-				str = "" + obj;
-			} else if (obj.getClass() == DBFieldType.Double.targetClazz) {
-				str = "" + obj;
-			} else {
-				str = "\"" + obj + "\"";
-			}
+			// if (obj.getClass() == DBFieldType.Blob.targetClazz) {
+			objs.add(obj);
+			str = "?";
+			// } else if (obj.getClass() == DBFieldType.Int.targetClazz) {
+			// str = "" + obj;
+			// } else if (obj.getClass() == DBFieldType.Double.targetClazz) {
+			// str = "" + obj;
+			// } else {
+			// str = "\"" + obj + "\"";
+			// }
 			if (j == 0)
 				value.append(str);
 			else
@@ -121,16 +124,16 @@ public class Table {
 		List<Object> objs = new ArrayList<>();
 		DataUtils.forEachWithIndex(values, (obj, i) -> {
 			String str;
-			if (obj.getClass() == DBFieldType.Blob.targetClazz) {
-				objs.add(obj);
-				str = "?";
-			} else if (obj.getClass() == DBFieldType.Int.targetClazz) {
-				str = "" + obj;
-			} else if (obj.getClass() == DBFieldType.Double.targetClazz) {
-				str = "" + obj;
-			} else {
-				str = "\"" + obj + "\"";
-			}
+			// if (obj.getClass() == DBFieldType.Blob.targetClazz) {
+			objs.add(obj);
+			str = "?";
+			// } else if (obj.getClass() == DBFieldType.Int.targetClazz) {
+			// str = "" + obj;
+			// } else if (obj.getClass() == DBFieldType.Double.targetClazz) {
+			// str = "" + obj;
+			// } else {
+			// str = "\"" + obj + "\"";
+			// }
 			if (i == 0)
 				sb.append(str);
 			else
@@ -142,7 +145,7 @@ public class Table {
 		return this;
 	}
 
-	public DBSelecter select(){
+	public DBSelecter select() {
 		return new DBSelecter(this);
 	}
 
@@ -150,7 +153,7 @@ public class Table {
 		this.construct = construct;
 		return this;
 	}
-	
+
 	public Table update(Map<String, Object> map, String where) throws SQLException {
 		StringBuffer sb = new StringBuffer("UPDATE " + name + " SET ");
 		StringBuffer sets = new StringBuffer();
@@ -160,16 +163,16 @@ public class Table {
 		for (Entry<String, Object> entry : map.entrySet()) {
 			Object obj = entry.getValue();
 			String str;
-			if (obj.getClass() == DBFieldType.Blob.targetClazz) {
-				objs.add(obj);
-				str = "?";
-			} else if (obj.getClass() == DBFieldType.Int.targetClazz) {
-				str = "" + obj;
-			} else if (obj.getClass() == DBFieldType.Double.targetClazz) {
-				str = "" + obj;
-			} else {
-				str = "\"" + obj + "\"";
-			}
+			// if (obj.getClass() == DBFieldType.Blob.targetClazz) {
+			objs.add(obj);
+			str = "?";
+			// } else if (obj.getClass() == DBFieldType.Int.targetClazz) {
+			// str = "" + obj;
+			// } else if (obj.getClass() == DBFieldType.Double.targetClazz) {
+			// str = "" + obj;
+			// } else {
+			// str = "\"" + obj + "\"";
+			// }
 			if (j == 0)
 				sets.append(entry.getKey()).append(" = ").append(str);
 			else
@@ -203,5 +206,46 @@ public class Table {
 		if (exceptions[0] != null)
 			throw exceptions[0];
 		return this;
+	}
+
+	public Table queryConstruct() {
+		PreparedStatement pst = null;
+		try {
+			pst = getDatabase().getConnection().prepareStatement("select * from " + getName() + " where 1=2");
+			ResultSetMetaData rsd = pst.executeQuery().getMetaData();
+			TableConstruct construct = new TableConstruct(this);
+			DatabaseMetaData dbMeta = getDatabase().getConnection().getMetaData();
+			DBField dbField = new DBField();
+			ResultSet pkRSet = dbMeta.getPrimaryKeys(getDatabase().getConnection().getCatalog(), null, getName());
+			List<String> pk = new ArrayList<>();
+			while (pkRSet.next()) {
+				pk.add(pkRSet.getString(6));
+			}
+			pkRSet.close();
+			for (int i = 1; i <= rsd.getColumnCount(); i++) {
+				dbField = new DBField();
+				dbField.setName(rsd.getColumnName(i));
+				dbField.setType(
+						DBFieldType.valueOf(rsd.getColumnTypeName(i), Class.forName(rsd.getColumnClassName(i))));
+				dbField.setAutoIncrement(rsd.isAutoIncrement(i));
+				if (rsd.isNullable(i) == 0)
+					dbField.setNotNull(true);
+				else if (rsd.isNullable(i) == 1)
+					dbField.setNotNull(false);
+				if (pk.contains(dbField.getName()))
+					dbField.setPrimaryKey(true);
+				construct.addDBField(dbField);
+			}
+			setConstruct(construct);
+			return this;
+		} catch (SQLException | ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		} finally {
+			try {
+				pst.close();
+				pst = null;
+			} catch (Exception e) {
+			}
+		}
 	}
 }

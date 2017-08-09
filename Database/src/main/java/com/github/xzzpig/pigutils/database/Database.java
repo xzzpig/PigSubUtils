@@ -2,6 +2,7 @@ package com.github.xzzpig.pigutils.database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -25,7 +26,11 @@ public class Database {
 	private Connection connection;
 
 	public Database(@NotNull Connection connection) {
-		new ClassUtils<>(Database.class).checkConstructorArgs(new Class[] { Connection.class }, connection);
+		new ClassUtils<>(Database.class);
+		ClassUtils.checkThisConstructorArgs(connection);// .checkConstructorArgs(new
+														// Class[] {
+														// Connection.class },
+														// connection);
 		try {
 			if (connection.isClosed()) {
 				throw new IllegalArgumentException("connection is closed");
@@ -69,7 +74,7 @@ public class Database {
 			PreparedStatement ps = this.getConnection().prepareStatement(sql);
 			DataUtils.forEachWithIndex(perpareLists, (o, i) -> {
 				try {
-					ps.setBytes(i + 1, (byte[]) o);
+					ps.setObject(i + 1, o);// .setBytes(i + 1, (byte[]) o);
 				} catch (SQLException e) {
 					exceptions[0] = e;
 					return EachResult.BREAK;
@@ -96,5 +101,22 @@ public class Database {
 		Statement statement = connection.createStatement();
 		consumer.accept(statement);
 		statement.close();
+	}
+
+	private List<String> tableNames;
+
+	public String[] getAllTableNames() {
+		if (tableNames == null)
+			try {
+				tableNames = new ArrayList<>();
+				ResultSet result = connection.getMetaData().getTables(connection.getCatalog(), null, null,
+						new String[] { "TABLE" });
+				while (result.next()) {
+					tableNames.add(result.getString("TABLE_NAME"));
+				}
+			} catch (SQLException e) {
+				throw new RuntimeException(e);
+			}
+		return tableNames.toArray(new String[0]);
 	}
 }
