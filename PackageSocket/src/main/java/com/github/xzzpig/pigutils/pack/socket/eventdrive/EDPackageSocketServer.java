@@ -39,4 +39,10 @@ public class EDPackageSocketServer extends PackageSocketServer implements EventA
 		bus.callEvent(new PackageSocketPackageEvent(socket, pack));
 	}
 
+	@Override
+	public boolean onGetPackageError(PackageSocket socket, Exception exception) {
+		PackageSocketGetPackageErrorEvent event = new PackageSocketGetPackageErrorEvent(socket, exception);
+		bus.callEvent(event);
+		return event.disconnect;
+	}
 }

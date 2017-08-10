@@ -30,4 +30,14 @@ public class PackageSocket {
 		}
 		return this;
 	}
+	public synchronized PackageSocket send(Package pack,long speed) {
+		synchronized (socket) {
+			try {
+				pack.write(socket.getOutputStream(),speed);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		return this;
+	}
 }

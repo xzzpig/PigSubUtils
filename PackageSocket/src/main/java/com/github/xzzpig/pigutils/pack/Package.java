@@ -106,10 +106,26 @@ public class Package {
 
 	public Package write(OutputStream out) throws IOException {
 		int typeSize = getType().length();
-		out.write(int2Bytes(typeSize));
-		out.write(getType().getBytes());
-		out.write(int2Bytes(getSize()));
-		out.write(getData());
+		synchronized (out) {
+			out.write(int2Bytes(typeSize));
+			out.write(getType().getBytes());
+			out.write(int2Bytes(getSize()));
+			out.write(getData());
+		}
+		return this;
+	}
+
+	public Package write(OutputStream out, long speed) throws IOException {
+		if (speed <= 0)
+			return write(out);
+		long time = System.currentTimeMillis();
+		write(out);
+		long t = getData().length * 1000 / speed - (time - System.currentTimeMillis());
+		if (t > 0)
+			try {
+				Thread.sleep(t);
+			} catch (InterruptedException e) {
+			}
 		return this;
 	}
 }

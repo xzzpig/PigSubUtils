@@ -24,7 +24,17 @@ import com.github.xzzpig.pigutils.reflect.MethodUtils;
 
 public class FileTransferPackage extends WrapperPackage {
 
+	/**
+	 * 每个包的大小(仅限发送方有效)
+	 */
 	public static int FileDetailPackageLength = 1024 * 16;
+	/**
+	 * 最大上传速度(仅限发送方有效)<br/>
+	 * -1为无限制<br/>
+	 * 默认:-1<br/>
+	 * 单位:Bps
+	 */
+	public static int MaxSpeed = -1;
 
 	public static Map<Long, FileOutputStream> filemap_Receiver = new Hashtable<>();
 
@@ -84,6 +94,10 @@ public class FileTransferPackage extends WrapperPackage {
 		if (file != null) {
 			boolean cont = true;
 			if (!file.exists()) {
+				try {
+					file.getParentFile().mkdirs();
+				} catch (Exception e) {
+				}
 				try {
 					if (!file.createNewFile())
 						throw new IOException("create " + file.getName() + " failed");
@@ -170,13 +184,24 @@ public class FileTransferPackage extends WrapperPackage {
 			extendFile.withInputStream(in -> {
 				try {
 					int len = 0;
+					// long lastTime = System.currentTimeMillis();
 					while ((len = in.read(bs)) != -1) {
 						if (len == bs.length) {
 							pack.data = bs;
 						} else {
 							pack.data = Arrays.copyOf(bs, len);
 						}
-						socket.send(transferPackage);
+						socket.send(transferPackage, MaxSpeed);
+						// if (MaxSpeed > 0) {
+						// long t = pack.data.length * 1000 / MaxSpeed -
+						// (lastTime - System.currentTimeMillis());
+						// if (t > 0)
+						// try {
+						// Thread.sleep(t);
+						// } catch (InterruptedException e) {
+						// }
+						// lastTime = System.currentTimeMillis();
+						// }
 					}
 				} catch (IOException e) {
 					e.printStackTrace();

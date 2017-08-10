@@ -22,6 +22,12 @@ public abstract class PackageSocketServer implements Runnable {
 	private AtomicBoolean started;
 	private Thread thread;
 
+	/**
+	 * 允许的最大连续错误数<br/>
+	 * 当接收Package时连续报错数目超过maxErrorCount时自动与客户端断开连接
+	 */
+	public int maxErrorCount = 10;
+
 	public PackageSocketServer(@NotNull int port) {
 		this.port = port;
 		started = new AtomicBoolean(false);
@@ -36,6 +42,13 @@ public abstract class PackageSocketServer implements Runnable {
 	public abstract void onClose(PackageSocket socket);
 
 	public abstract void onError(PackageSocket socket, Exception exception);
+
+	/**
+	 * @return 是否与socket断开连接
+	 */
+	public boolean onGetPackageError(PackageSocket socket, Exception exception) {
+		return false;
+	}
 
 	public abstract void onOpen(PackageSocket socket);
 
@@ -55,14 +68,21 @@ public abstract class PackageSocketServer implements Runnable {
 		Thread t = new Thread() {
 			@Override
 			public void run() {
+				int errorCounter = 0;
 				while (!isInterrupted() && !socket.getSocket().isClosed()) {
 					try {
 						Package pack = Package.read(socket.getSocket().getInputStream());
 						onPackage(socket, pack);
+						errorCounter = 0;
 					} catch (IOException e) {
 						if (e.getMessage().contains("Connection reset"))
 							break;
 						onError(socket, e);
+						if (onGetPackageError(socket, e))
+							break;
+						errorCounter++;
+						if (errorCounter > maxErrorCount)
+							break;
 					} catch (NegativeArraySizeException e) {
 						break;
 					}
@@ -106,7 +126,10 @@ public abstract class PackageSocketServer implements Runnable {
 			} catch (IOException e) {
 				onError(entry.getKey(), e);
 			}
-			entry.getValue().interrupt();
+			try {
+				entry.getValue().interrupt();
+			} catch (Exception e) {
+			}
 			// onPSClose(entry.getKey());
 		}
 		try {
