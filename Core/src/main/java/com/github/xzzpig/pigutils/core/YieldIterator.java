@@ -1,4 +1,4 @@
-package com.github.xzzpig.pigutils;
+package com.github.xzzpig.pigutils.core;
 
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;

@@ -4,6 +4,6 @@ repositories {
 }
 
 dependencies {
-    compile project(':Json')
+    compile project(':Core')
     testCompile 'junit:junit:4.12'
 }

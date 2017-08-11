@@ -1,8 +1,8 @@
 package com.github.xzzpig.pigutils.crypt.md5;
 
-import com.github.xzzpig.pigutils.crypt.Cryptable;
+import static com.github.xzzpig.pigutils.core.MD5.GetMD5Code;
 
-import static com.github.xzzpig.pigutils.MD5.GetMD5Code;
+import com.github.xzzpig.pigutils.crypt.Cryptable;
 
 public class MD5Crypt implements Cryptable {
 

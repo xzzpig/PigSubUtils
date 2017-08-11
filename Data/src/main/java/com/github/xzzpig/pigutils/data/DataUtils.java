@@ -7,9 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.github.xzzpig.pigutils.YieldIterator;
 import com.github.xzzpig.pigutils.annoiation.BaseOnClass;
 import com.github.xzzpig.pigutils.annoiation.NotNull;
+import com.github.xzzpig.pigutils.core.YieldIterator;
 import com.github.xzzpig.pigutils.reflect.MethodUtils;
 
 /**

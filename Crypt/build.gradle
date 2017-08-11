@@ -4,7 +4,7 @@ repositories {
 }
 
 dependencies {
-    compile project(':Other')
+    //compile project(':Other')
     compile project(':Event')
     testCompile 'junit:junit:4.12'
 }

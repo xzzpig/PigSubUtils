@@ -28,6 +28,9 @@ import java.io.FileWriter;
  */
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -43,6 +46,9 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import com.github.xzzpig.pigutils.core.IData;
+
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -96,7 +102,7 @@ import java.util.Set;
  * @author JSON.org
  * @version 2016-05-20
  */
-public class JSONObject {
+public class JSONObject implements IData {
 	/**
 	 * JSONObject.NULL is equivalent to the value that JavaScript calls null,
 	 * whilst Java's null is equivalent to the value that JavaScript calls
@@ -1945,5 +1951,57 @@ public class JSONObject {
 		} catch (IOException exception) {
 			throw new JSONException(exception);
 		}
+	}
+
+	@Override
+	public JSONObject set(String key, Object value) {
+		put(key, value);
+		return this;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T> T get(String key, Class<T> value) {
+		if (value == Object.class)
+			return (T) this.get(key);
+		if (value == String.class)
+			return (T) this.optString(key);
+		if (value == Boolean.class)
+			return (T) (Boolean) this.optBoolean(key);
+		if (value == Double.class)
+			return (T) (Double) this.optDouble(key);
+		if (value == Integer.class)
+			return (T) (Integer) this.optInt(key);
+		if (value == Long.class)
+			return (T) (Long) this.optLong(key);
+		return null;
+	}
+
+	@Override
+	public Collection<Object> values() {
+		return map.values();
+	}
+
+	@Override
+	public void clear() {
+		map.clear();
+	}
+
+	@Override
+	public int size() {
+		return map.size();
+	}
+
+	@Override
+	public IData load(InputStream in) {
+		this.map.clear();
+		this.map.putAll(new JSONObject(new JSONTokener(in)).map);
+		return this;
+	}
+
+	@Override
+	public IData save(OutputStream out) {
+		write(new OutputStreamWriter(out));
+		return this;
 	}
 }

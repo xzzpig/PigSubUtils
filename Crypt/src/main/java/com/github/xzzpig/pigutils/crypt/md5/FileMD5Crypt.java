@@ -1,6 +1,6 @@
 package com.github.xzzpig.pigutils.crypt.md5;
 
-import static com.github.xzzpig.pigutils.MD5.GetMD5Code;
+import static com.github.xzzpig.pigutils.core.MD5.GetMD5Code;
 
 import java.io.File;
 import java.io.FileNotFoundException;

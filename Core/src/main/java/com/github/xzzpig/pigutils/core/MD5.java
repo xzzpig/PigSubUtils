@@ -1,4 +1,4 @@
-package com.github.xzzpig.pigutils;
+package com.github.xzzpig.pigutils.core;
 
 import java.io.File;
 import java.io.FileInputStream;

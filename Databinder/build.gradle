@@ -5,5 +5,4 @@ repositories {
 
 dependencies {
     compile project(':Reflect')
-    testCompile 'junit:junit:4.12'
 }

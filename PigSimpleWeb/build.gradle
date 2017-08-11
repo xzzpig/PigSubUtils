@@ -7,5 +7,4 @@ dependencies {
     compile project(':Event')
     compile project(':NanoHttpd')
     compile project(':Other')
-    testCompile 'junit:junit:4.12'
 }

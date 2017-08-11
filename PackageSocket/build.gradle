@@ -6,5 +6,4 @@ repositories {
 dependencies {
     compile project(':Reflect')
     compile project(':File')
-    testCompile 'junit:junit:4.12'
 }
