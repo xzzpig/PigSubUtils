@@ -16,14 +16,30 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
-import com.github.xzzpig.pigutils.TString;
-
 public class PigData implements Serializable {
-
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 6660306307743729543L;
+
+	private static String toString(Object object) {
+		StringBuffer sb = new StringBuffer();
+		if (object instanceof List<?>) {
+			List<?> list = (List<?>) object;
+			sb.append('[');
+			for (Object object2 : list) {
+				sb.append(toString(object2)).append(',');
+			}
+			if (sb.toString().equalsIgnoreCase("["))
+				sb.append(',');
+			sb.replace(sb.length() - 1, sb.length(), "]");
+		} else if (object instanceof byte[]) {
+			sb.append(new String((byte[]) object));
+		} else {
+			sb.append(object);
+		}
+		return sb.toString();
+	}
 
 	private HashMap<String, Object> data = new HashMap<String, Object>();
 
@@ -252,8 +268,8 @@ public class PigData implements Serializable {
 				sb.append('{').append("\n").append(((PigData) value).getPrintString(before + 2) + beforeBuffer)
 						.append('}').append("\n");
 			else
-				sb.append(':').append(
-						TString.toString(value).replace(':', '_').replace(';', '_').replace('{', '_').replace('}', '_'))
+				sb.append(':')
+						.append(toString(value).replace(':', '_').replace(';', '_').replace('{', '_').replace('}', '_'))
 						.append(';').append("\n");
 		}
 		return sb.toString();
@@ -279,7 +295,7 @@ public class PigData implements Serializable {
 	}
 
 	public String getString(String key) {
-		String str = TString.toString(this.get(key));
+		String str = toString(this.get(key));
 		if (str.equalsIgnoreCase(""))
 			return null;
 		return str;
@@ -373,10 +389,10 @@ public class PigData implements Serializable {
 			sb.append(entry.getKey());
 			Object value = entry.getValue();
 			if (value instanceof PigData)
-				sb.append('{').append(TString.toString(value)).append('}');
+				sb.append('{').append(toString(value)).append('}');
 			else
-				sb.append(':').append(
-						TString.toString(value).replace(':', '：').replace(';', '；').replace('{', '｛').replace('}', '｝'))
+				sb.append(':')
+						.append(toString(value).replace(':', '：').replace(';', '；').replace('{', '｛').replace('}', '｝'))
 						.append(';');
 		}
 		return sb.toString();
