@@ -1,6 +1,7 @@
 package com.github.xzzpig.pigutils.event;
 
-import com.github.xzzpig.pigutils.json.JSONObject;
+import com.github.xzzpig.pigutils.core.HashData;
+import com.github.xzzpig.pigutils.core.IData;
 
 public class TransformEvent<F, R> extends Event {
 	public interface Transformer<F, R> {
@@ -10,8 +11,8 @@ public class TransformEvent<F, R> extends Event {
 	public static <F, R> void addTransformer(Transformer<F, R> transformer) {
 		Event.regRunner(new EventRunner<TransformEvent<F, R>>() {
 			@Override
-			public JSONObject getInfo() {
-				return new JSONObject().put("from", transformer.toString());
+			public IData getInfo() {
+				return new HashData().set("from", transformer.toString());
 			}
 
 			@Override
@@ -29,7 +30,7 @@ public class TransformEvent<F, R> extends Event {
 	}
 
 	public static <F, R> void removeTransformer(Transformer<F, R> transformer) {
-		Event.unregRunner(r -> r.getInfo().optString("from", "").equalsIgnoreCase(transformer.toString()));
+		Event.unregRunner(r -> r.getInfo().get("from", String.class, "").equalsIgnoreCase(transformer.toString()));
 	}
 
 	public static <F, R> R transform(F from, Class<R> rc) {

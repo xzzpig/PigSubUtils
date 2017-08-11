@@ -12,7 +12,12 @@ public interface IData {
 		return get(key, Object.class);
 	}
 
-	<T> T get(String key, Class<T> value);
+	<T> T get(String key, Class<T> clazz);
+
+	default <T> T get(String key, Class<T> clazz, T defaultValue) {
+		T t = get(key, clazz);
+		return t == null ? defaultValue : t;
+	}
 
 	default boolean getBoolean(String key) {
 		return get(key, Boolean.class);

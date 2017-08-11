@@ -6,7 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
-import com.github.xzzpig.pigutils.json.JSONObject;
+import com.github.xzzpig.pigutils.core.HashData;
+import com.github.xzzpig.pigutils.core.IData;
 
 /**
  * 作为EventRunner的载体
@@ -104,9 +105,9 @@ public class EventBus {
 				}
 
 				@Override
-				public JSONObject getInfo() {
-					return new JSONObject().put("listener", listener.toString()).put("method", method.getName())
-							.put("class", listener.getClass().getName());
+				public IData getInfo() {
+					return new HashData().set("listener", listener.toString()).set("method", method.getName())
+							.set("class", listener.getClass().getName());
 				}
 
 				@Override
@@ -188,7 +189,7 @@ public class EventBus {
 		unregRunner(r -> {
 			if (r.getInfo() == null)
 				return false;
-			if (r.getInfo().optString("class", "").equalsIgnoreCase(c.getName()))
+			if (r.getInfo().get("class", String.class, "").equalsIgnoreCase(c.getName()))
 				return true;
 			return false;
 		});
@@ -205,7 +206,7 @@ public class EventBus {
 		unregRunner(r -> {
 			if (r.getInfo() == null)
 				return false;
-			if (r.getInfo().optString("listener", "").equalsIgnoreCase(listener.toString()))
+			if (r.getInfo().get("listener", String.class, "").equalsIgnoreCase(listener.toString()))
 				return true;
 			return false;
 		});
@@ -233,8 +234,11 @@ public class EventBus {
 	public EventBus unregRunner(Predicate<EventRunner<?>> p) {
 		List<EventRunner<?>> removeList = new ArrayList<>();
 		for (EventRunner<?> r : runners) {
-			if (p.test(r))
-				removeList.add(r);
+			try {
+				if (p.test(r))
+					removeList.add(r);
+			} catch (Exception e) {
+			}
 		}
 		runners.removeAll(removeList);
 		return this;

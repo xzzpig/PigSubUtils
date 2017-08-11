@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
-import com.github.xzzpig.pigutils.json.JSONObject;
+import com.github.xzzpig.pigutils.core.IData;
 
 public interface EventRunner<T extends Event> {
 
@@ -31,7 +31,7 @@ public interface EventRunner<T extends Event> {
 	/**
 	 * @return EventRunner的可能的一些其他信息(默认为null)
 	 */
-	public default JSONObject getInfo() {
+	public default IData getInfo() {
 		return null;
 	}
 
