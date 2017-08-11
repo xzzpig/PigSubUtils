@@ -4,4 +4,6 @@ repositories {
 }
 
 dependencies {
+    compile project(':Reflect')
+    compile project(':Data')
 }

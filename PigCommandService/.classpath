@@ -9,6 +9,6 @@
 	<classpathentry kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
 	<classpathentry kind="src" path="/WebSocket"/>
 	<classpathentry kind="src" path="/Event"/>
-	<classpathentry kind="src" path="/Json"/>
+	<classpathentry kind="src" path="/Core"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

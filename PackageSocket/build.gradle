@@ -6,4 +6,5 @@ repositories {
 dependencies {
     compile project(':Reflect')
     compile project(':File')
+    compile project(':Json')
 }
