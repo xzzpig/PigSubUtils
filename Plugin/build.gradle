@@ -5,5 +5,4 @@ repositories {
 
 dependencies {
     compile project(':Other')
-    compile project(':Event')
 }

@@ -5,11 +5,11 @@
 			<attribute name="FROM_GRADLE_MODEL" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
-	<classpathentry path="bin" kind="output"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/"/>
+	<classpathentry kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
 	<classpathentry kind="src" path="/Other"/>
 	<classpathentry kind="src" path="/Json"/>
 	<classpathentry kind="src" path="/Core"/>
 	<classpathentry kind="src" path="/Event"/>
+	<classpathentry kind="output" path="bin"/>
 </classpath>

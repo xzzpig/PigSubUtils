@@ -12,7 +12,7 @@ import java.util.Map;
 
 import com.github.xzzpig.pigutils.annoiation.NotNull;
 import com.github.xzzpig.pigutils.annoiation.Nullable;
-import com.github.xzzpig.pigutils.event.TransformEvent;
+import com.github.xzzpig.pigutils.core.Transformer;
 import com.github.xzzpig.pigutils.file.ExtendFile;
 import com.github.xzzpig.pigutils.json.JSONException;
 import com.github.xzzpig.pigutils.json.JSONObject;
@@ -89,7 +89,7 @@ public class FileTransferPackage extends WrapperPackage {
 	private static void onFileTransferStartPackage(PackageSocket socket, Package pack) {
 		JSONObject json = null;
 		json = new JSONObject(pack.getStringData());
-		File file = TransformEvent.transform(json, File.class);
+		File file = Transformer.transform(json, File.class);
 		byte b = 0;
 		if (file != null) {
 			boolean cont = true;

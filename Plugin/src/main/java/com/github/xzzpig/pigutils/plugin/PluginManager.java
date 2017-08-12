@@ -20,7 +20,7 @@ import javax.script.ScriptException;
 
 import com.github.xzzpig.pigutils.TJython;
 import com.github.xzzpig.pigutils.TScript;
-import com.github.xzzpig.pigutils.event.TransformEvent.Transformer;
+import com.github.xzzpig.pigutils.core.Transformer;
 
 public class PluginManager {
 

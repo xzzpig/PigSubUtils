@@ -1,9 +1,10 @@
 package com.github.xzzpig.pigutils.crypt;
 
+import java.util.function.Predicate;
+
+import com.github.xzzpig.pigutils.core.Transformer;
 import com.github.xzzpig.pigutils.crypt.md5.FileMD5Crypter;
 import com.github.xzzpig.pigutils.crypt.md5.MD5Crypter;
-import com.github.xzzpig.pigutils.event.TransformEvent;
-import com.github.xzzpig.pigutils.event.TransformEvent.Transformer;
 
 /**
  * 加密器
@@ -44,7 +45,7 @@ public abstract class Crypter {
 	 * @return
 	 */
 	public static Cryptable crypt(String type, Object... objs) {
-		Crypter crypter = TransformEvent.transform("crypt." + type, Crypter.class);
+		Crypter crypter = Transformer.transform("crypt." + type, Crypter.class);
 		return crypter == null ? null : crypter.crypt(objs);
 	}
 
@@ -56,7 +57,7 @@ public abstract class Crypter {
 	 * @return
 	 */
 	public static Decryptable decrypt(String type, Object... objs) {
-		Crypter crypter = TransformEvent.transform("crypt." + type, Crypter.class);
+		Crypter crypter = Transformer.transform("crypt." + type, Crypter.class);
 		return crypter == null ? null : crypter.decrypt(objs);
 	}
 
@@ -66,7 +67,7 @@ public abstract class Crypter {
 	 * @param crypter
 	 */
 	public static void regCrypter(Crypter crypter) {
-		TransformEvent.addTransformer(new CrypterTransformr(crypter));
+		Transformer.addTransformer(new CrypterTransformr(crypter));
 	}
 
 	/**
@@ -75,7 +76,8 @@ public abstract class Crypter {
 	 * @param crypter
 	 */
 	public static void unregCrypter(Crypter crypter) {
-		TransformEvent.removeTransformer(new CrypterTransformr(crypter));
+		Transformer.transformers.removeIf(((Predicate<Transformer<?, ?>>) (t -> t instanceof CrypterTransformr))
+				.and((t) -> ((CrypterTransformr) t).crypter.getCryptType().equalsIgnoreCase(crypter.getCryptType())));
 	}
 
 	protected abstract Cryptable crypt(Object... objs);
