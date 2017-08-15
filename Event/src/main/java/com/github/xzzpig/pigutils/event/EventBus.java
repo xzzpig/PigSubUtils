@@ -94,7 +94,7 @@ public class EventBus {
 
 				@Override
 				public boolean canRun(Event e) {
-					Class<?> target = (Class<?>) method.getGenericParameterTypes()[0];
+					Class<?> target = method.getParameterTypes()[0];
 					return target.isAssignableFrom(e.getClass());
 				}
 

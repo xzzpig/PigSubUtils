@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.github.xzzpig.pigutils.annoiation.NotNull;
 import com.github.xzzpig.pigutils.annoiation.Nullable;
@@ -21,6 +22,7 @@ import com.github.xzzpig.pigutils.pack.socket.eventdrive.EDPackageSocketClient;
 import com.github.xzzpig.pigutils.pack.socket.eventdrive.EDPackageSocketServer;
 import com.github.xzzpig.pigutils.pack.socket.eventdrive.PackageSocketPackageEvent;
 import com.github.xzzpig.pigutils.reflect.MethodUtils;
+import com.github.xzzpig.pigutils.thread.TimeThread;
 
 public class FileTransferPackage extends WrapperPackage {
 
@@ -35,9 +37,16 @@ public class FileTransferPackage extends WrapperPackage {
 	 * 单位:Bps
 	 */
 	public static int MaxSpeed = -1;
+	
+	/**
+	 * 接收超时
+	 * 单位:ms
+	 */
+	public static long Timeout = 5000;
 
 	public static Map<Long, FileOutputStream> filemap_Receiver = new Hashtable<>();
-
+	public static Map<Long, TimeThread> timethread_Receiver = new Hashtable<>();
+	public static Map<Long, AtomicBoolean> timeout_Sender = new Hashtable<>();
 	public static Map<Long, File> filemap_Sender = new Hashtable<>();
 
 	public static void addSupport(EDPackageSocketClient client) {
@@ -52,6 +61,7 @@ public class FileTransferPackage extends WrapperPackage {
 	private static void onFileTransferContentPackage(PackageSocket socket, Package pack) {
 		FileTransferPackage pack2 = new FileTransferPackage(pack.getType(), pack.getData());
 		long fid = pack2.getFid();
+		timethread_Receiver.get(fid).resetTime(System.currentTimeMillis() + Timeout);
 		FileOutputStream fout = filemap_Receiver.get(fid);
 		synchronized (fout) {
 			try {
@@ -62,6 +72,7 @@ public class FileTransferPackage extends WrapperPackage {
 		}
 	}
 
+	// Receiver
 	private static void onFileTransferFinishPackage(PackageSocket socket, Package pack) {
 		FileTransferPackage pack2 = new FileTransferPackage(pack.getType(), pack.getData());
 		long fid = pack2.getFid();
@@ -71,6 +82,8 @@ public class FileTransferPackage extends WrapperPackage {
 			e.printStackTrace();
 		}
 		filemap_Receiver.remove(fid);
+		timethread_Receiver.get(fid).interrupt();
+		timethread_Receiver.remove(fid);
 	}
 
 	// Sender
@@ -82,7 +95,16 @@ public class FileTransferPackage extends WrapperPackage {
 			filemap_Sender.remove(fid);
 			return;
 		}
+		timeout_Sender.put(fid, new AtomicBoolean(false));
 		startSendFile(socket, filemap_Sender.get(fid), fid);
+	}
+
+	// Sender
+	private static void onFileTransferTimeoutPackage(PackageSocket socket, Package pack2) {
+		long fid = Long.parseLong(pack2.getStringData());
+		if (timeout_Sender.containsKey(fid)) {
+			timeout_Sender.get(fid).set(true);
+		}
 	}
 
 	// Receiver
@@ -112,6 +134,14 @@ public class FileTransferPackage extends WrapperPackage {
 					fout = new FileOutputStream(file, false);
 					filemap_Receiver.put(json.getLong("fid"), fout);
 					b = 1;
+					long fid = json.getLong("fid");
+					timethread_Receiver.put(fid, new TimeThread(System.currentTimeMillis() + Timeout) {
+						@Override
+						public void realRun() {
+							socket.send(new Package("FileTransferTimeoutPackage", fid + ""));
+						}
+					});
+					timethread_Receiver.get(fid).start();
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 					cont = false;
@@ -137,6 +167,9 @@ public class FileTransferPackage extends WrapperPackage {
 			break;
 		case "FileTransferFinishPackage":
 			onFileTransferFinishPackage(socket, pack);
+			break;
+		case "FileTransferTimeoutPackage":
+			onFileTransferTimeoutPackage(socket, pack);
 			break;
 		default:
 			break;
@@ -181,27 +214,19 @@ public class FileTransferPackage extends WrapperPackage {
 			transferPackage.setFid(fid);
 			ExtendFile extendFile = new ExtendFile(file);
 			byte[] bs = new byte[FileDetailPackageLength];
+			AtomicBoolean timeout = timeout_Sender.get(fid);
 			extendFile.withInputStream(in -> {
 				try {
 					int len = 0;
-					// long lastTime = System.currentTimeMillis();
 					while ((len = in.read(bs)) != -1) {
 						if (len == bs.length) {
 							pack.data = bs;
 						} else {
 							pack.data = Arrays.copyOf(bs, len);
 						}
+						if (timeout.get())
+							break;
 						socket.send(transferPackage, MaxSpeed);
-						// if (MaxSpeed > 0) {
-						// long t = pack.data.length * 1000 / MaxSpeed -
-						// (lastTime - System.currentTimeMillis());
-						// if (t > 0)
-						// try {
-						// Thread.sleep(t);
-						// } catch (InterruptedException e) {
-						// }
-						// lastTime = System.currentTimeMillis();
-						// }
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -209,9 +234,11 @@ public class FileTransferPackage extends WrapperPackage {
 				}
 			});
 			pack.type = "FileTransferFinishPackage";
-			pack.data = new byte[] { 0 };
+			byte success = timeout.get() ? (byte) 0 : (byte) 1;
+			pack.data = new byte[] { success };
 			socket.send(transferPackage);
 			filemap_Sender.remove(fid);
+			timeout_Sender.remove(fid);
 		}).start();
 	}
 

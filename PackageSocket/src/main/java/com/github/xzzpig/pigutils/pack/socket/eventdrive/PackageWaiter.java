@@ -1,5 +1,8 @@
 package com.github.xzzpig.pigutils.pack.socket.eventdrive;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.github.xzzpig.pigutils.event.EventAdapter;
@@ -13,7 +16,7 @@ public class PackageWaiter {
 
 	private Thread thread;
 
-	private String type;
+	private List<String> type;
 
 	public PackageWaiter(EDPackageSocketClient client) {
 		this.socket = client;
@@ -24,7 +27,7 @@ public class PackageWaiter {
 	}
 
 	private void onPackage(PackageSocketPackageEvent event) {
-		if (event.getPackage().getType().equals(type)) {
+		if (type != null && type.contains(event.getPackage().getType())) {
 			pack.set(event.getPackage());
 			if (thread != null && thread.isAlive())
 				thread.interrupt();
@@ -35,8 +38,12 @@ public class PackageWaiter {
 		return waitForPackage(type, -1);
 	}
 
-	public synchronized Package waitForPackage(String type, int timeout) {
-		this.type = type;
+	public synchronized Package waitForPackage(String type2, int timeout) {
+		return waitForPackage(timeout, type2);
+	}
+
+	public synchronized Package waitForPackage(int timeout, String... types) {
+		this.type = new ArrayList<>(Arrays.asList(types));
 		thread = new Thread() {
 			public void run() {
 				if (timeout > 0)

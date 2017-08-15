@@ -43,7 +43,7 @@ public class Event {
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 */
-	public static final void registListener(Class<Listener> c) throws InstantiationException, IllegalAccessException {
+	public static final void registListener(Class<? extends Listener> c) throws InstantiationException, IllegalAccessException {
 		eventInstance.regListener(c);
 	}
 
