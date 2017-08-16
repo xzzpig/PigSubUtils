@@ -16,6 +16,12 @@ public abstract class PackageSocketClient extends PackageSocket implements Runna
 	private AtomicBoolean started;
 	private Thread thread;
 
+	/**
+	 * 允许的最大连续错误数<br/>
+	 * 当接收Package时连续报错数目超过maxErrorCount时自动与服务端断开连接
+	 */
+	public int maxErrorCount = 10;
+
 	public PackageSocketClient(@NotNull String ip, int port) {
 		ClassUtils.checkThisConstructorArgs(ip, port);
 		this.ip = ip;
@@ -45,12 +51,19 @@ public abstract class PackageSocketClient extends PackageSocket implements Runna
 			return;
 		}
 		onOpen();
+		int errorCounter = 0;
 		while (!thread.isInterrupted() && !getSocket().isClosed()) {
 			try {
 				Package pack = Package.read(getSocket().getInputStream());
 				onPackage(pack);
+				errorCounter = 0;
 			} catch (IOException e) {
+				if (e.getMessage().contains("Connection reset"))
+					break;
 				onError(e);
+				errorCounter++;
+				if (errorCounter > maxErrorCount)
+					break;
 			} catch (NegativeArraySizeException e) {
 				break;
 			}
