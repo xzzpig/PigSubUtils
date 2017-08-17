@@ -5,7 +5,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
 
-import com.github.xzzpig.pigutils.annoiation.AnnotatedElementCheckEvent;
 import com.github.xzzpig.pigutils.annoiation.NotNull;
 import com.github.xzzpig.pigutils.event.Event;
 

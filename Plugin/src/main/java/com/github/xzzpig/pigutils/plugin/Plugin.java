@@ -1,13 +1,20 @@
 package com.github.xzzpig.pigutils.plugin;
 
-public abstract class Plugin {
-	PluginInfo pluginInfo;
+import java.util.Map;
 
-	public PluginInfo getPluginInfo() {
-		return pluginInfo;
+public interface Plugin {
+	String[] getDepends();
+	Map<String,String> getInfos();
+	String getName();
+	
+	void onDisable();
+	void onEnable();
+	default void onReload(){
+		onDisable();
+		onEnable();
 	}
-
-	public abstract void onDisable();
-
-	public abstract void onEnable();
+	
+	PluginLoader getPluginLoader();
+	
+	PluginManager getPluginManager();
 }

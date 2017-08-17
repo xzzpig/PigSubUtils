@@ -8,7 +8,6 @@ import java.lang.reflect.Parameter;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
-import com.github.xzzpig.pigutils.annoiation.AnnotatedElementCheckEvent;
 import com.github.xzzpig.pigutils.annoiation.NotNull;
 import com.github.xzzpig.pigutils.annoiation.Nullable;
 import com.github.xzzpig.pigutils.event.Event;

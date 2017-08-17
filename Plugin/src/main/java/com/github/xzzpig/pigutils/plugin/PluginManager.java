@@ -1,215 +1,85 @@
 package com.github.xzzpig.pigutils.plugin;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
+import com.github.xzzpig.pigutils.core.Registable;
+import com.github.xzzpig.pigutils.plugin.PluginLoader.PluginLoadResult;
 
-import com.github.xzzpig.pigutils.TJython;
-import com.github.xzzpig.pigutils.TScript;
-import com.github.xzzpig.pigutils.core.Transformer;
+public class PluginManager implements Registable<PluginLoader> {
 
-public class PluginManager {
+	public static final PluginManager DefaultPluginManager = new PluginManager();
 
-	public static final Map<String, Transformer<File, Plugin>> MIMEs = new HashMap<>();
+	List<PluginLoader> pluginLoaders = new ArrayList<>();
+	List<Plugin> plugins = new LinkedList<>();
 
-	static {
-		MIMEs.put("jar", PluginManager::loadJarPlugin);
+	public PluginManager() {
 	}
 
-	static List<PluginInfo> handleplugins = new ArrayList<>();
-	static Map<String, Plugin> plugins = new HashMap<>();
-
-	public static void loadHandlePlugin() {
-		List<PluginInfo> list = new ArrayList<>(handleplugins);
-		list.forEach((PluginInfo info) -> {
-			boolean load = (loadPlugin(info) != null);
-			if (load) {
-				handleplugins.remove(info);
-			}
-		});
+	@Override
+	public PluginManager register(PluginLoader pluginLoader) {
+		pluginLoaders.add(pluginLoader);
+		pluginLoaders.sort((t1, t2) -> t1.order() - t2.order());
+		return this;
 	}
 
-	private static PluginInfo loadInfoFromDir(File dir) {
-		File info_f = new File(dir, "info.json");
-		if (!info_f.exists())
-			return null;
-		PluginInfo info;
-		try {
-			info = new PluginInfo(new FileInputStream(info_f));
-		} catch (FileNotFoundException e) {
-			return null;
+	@Override
+	public PluginManager unregister(PluginLoader pluginLoader) {
+		pluginLoaders.remove(pluginLoader);
+		return this;
+	}
+
+	public PluginManager loadPlugin(Object obj) {
+		Optional<PluginLoader> loader = pluginLoaders.stream().filter(pl -> pl.accept(obj)).findFirst();
+		if (!loader.isPresent())
+			throw new PuginLoaderNoMarchedException();
+		PluginLoader pluginLoader = loader.get();
+		AtomicReference<PluginLoadResult> aresult = new AtomicReference<>();
+		Plugin p = pluginLoader.loadPlugin(this, obj, aresult);
+		PluginLoadResult result = aresult.get();
+		if (result == PluginLoadResult.SUCCESS) {
+			plugins.add(p);
+			if (pluginLoader.needSuccessNodify())
+				pluginLoader.successNodify(this, p);
+			nodiyOtherSuccess(p);
+		} else if (result == PluginLoadResult.FAILED) {
+			if (pluginLoader.needFailedNodify())
+				pluginLoader.failedNodify(obj);
+		} else if (result == PluginLoadResult.WAIT) {
+			if (pluginLoader.needWaitNodify())
+				pluginLoader.waitNodify(this, obj, p);
 		}
-		return info;
+		return this;
 	}
 
-	@SuppressWarnings({ "unchecked", "resource" })
-	public static Plugin loadJarPlugin(File jar) {
-		loadHandlePlugin();
-		try {
-			JarFile jarFile;
-			jarFile = new JarFile(jar);
-			ZipEntry jarEntry = jarFile.getEntry("info.json");
-			PluginInfo info;
-			InputStream inputStream = jarFile.getInputStream(jarEntry);
-			info = new PluginInfo(inputStream);
-			jarFile.close();
-			info.loader = new PluginLoader() {
-				@Override
-				public Plugin loadPlugin() {
-					try {
-						URLClassLoader urlClassLoader = new URLClassLoader(new URL[] { jar.toURI().toURL() });
-						String main = info.getMain();
-						Class<? extends Plugin> c = (Class<? extends Plugin>) urlClassLoader.loadClass(main);
-						Plugin plugin = c.newInstance();
-						plugin.pluginInfo = info;
-						return plugin;
-					} catch (Exception e) {
-						e.printStackTrace();
-						return null;
-					}
-				}
-			};
-			return loadPlugin(info);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
+	public PluginManager unloadPlugin(Plugin plugin) {
+		plugin.getPluginLoader().unloadPlugin(plugin);
+		if (plugin.getPluginLoader().needUnloadNodify())
+			plugin.getPluginLoader().unloadNodify(plugin);
+		plugins.remove(plugin);
+		return this;
 	}
 
-	public static Plugin loadJythonDirPlugin(File dir) {
-		if (!dir.isDirectory())
-			return null;
-		PluginInfo info = loadInfoFromDir(dir);
-		if (info == null)
-			return null;
-		String main = info.getMain();
-		if (main == null)
-			return null;
-		if (!main.endsWith(".py"))
-			main = main + ".py";
-		String main_ = main;
-		info.loader = new PluginLoader() {
-			@Override
-			public Plugin loadPlugin() {
-				TJython.build();
-				Plugin p = new Plugin() {
-					ScriptEngine engine = TScript.getJythonScriptEngine();
-
-					@Override
-					public void onDisable() {
-						String main = info.jsonObject.optString("disable");
-						if (main == null)
-							return;
-						if (!main.endsWith(".py"))
-							main = main + ".py";
-						File main_f = new File(dir, main.replaceAll(".", "/"));
-						FileReader fr = null;
-						try {
-							fr = new FileReader(main_f);
-						} catch (FileNotFoundException e) {
-							e.printStackTrace();
-						}
-						try {
-							engine.eval(fr);
-						} catch (ScriptException e) {
-							e.printStackTrace();
-						}
-						try {
-							fr.close();
-						} catch (IOException e) {
-						}
-					}
-
-					@Override
-					public void onEnable() {
-						File main_f = new File(dir, main_.replaceAll(".", "/"));
-						FileReader fr = null;
-						try {
-							fr = new FileReader(main_f);
-						} catch (FileNotFoundException e) {
-							e.printStackTrace();
-						}
-						engine.put("engine", engine);
-						engine.put("dir", dir);
-						engine.put("info", info);
-						try {
-							engine.eval(fr);
-						} catch (ScriptException e) {
-							e.printStackTrace();
-						}
-						try {
-							fr.close();
-						} catch (IOException e) {
-						}
-					}
-				};
-				return p;
-			}
-		};
-
-		return loadPlugin(info);
+	private void nodiyOtherSuccess(Plugin p) {
+		pluginLoaders.stream().filter(PluginLoader::needOtherSuccessNodify).forEach(pl -> pl.othersuccessNodify(p));
 	}
 
-	public static Plugin loadPlugin(File file) {
-		if (file.isDirectory()) {
-			PluginInfo info = loadInfoFromDir(file);
-			if (info == null)
-				return null;
-			String mime = info.jsonObject.optString("mime", null);
-			if (mime == null || !MIMEs.containsKey(mime) || MIMEs.get(mime) == null)
-				return null;
-			return MIMEs.get(mime).transform(file);
-		}
-		String[] names = file.getName().split(".");
-		if (names.length == 1)
-			return null;
-		String mime = names[names.length - 1];
-		if (!MIMEs.containsKey(mime) || MIMEs.get(mime) == null)
-			return null;
-		return MIMEs.get(mime).transform(file);
+	public PluginManager reloadPlugin(Plugin plugin) {
+		plugin.onReload();
+		return this;
 	}
 
-	private static Plugin loadPlugin(PluginInfo info) {
-		info.getDependence().forEach((String name) -> {
-			if (plugins.containsKey(name)) {
-				handleplugins.add(info);
-			}
-		});
-		if (handleplugins.contains(info)) {
-			return null;
-		}
-		Plugin plugin = info.loader.loadPlugin();
-		if (plugin == null) {
-			return null;
-		}
-		plugin.onEnable();
-		plugins.put(plugin.pluginInfo.getName(), plugin);
-		return plugin;
+	public boolean isPluginLoaded(String name) {
+		return plugins.stream().anyMatch(p -> p.getName().equals(name));
 	}
-
-	public static void unloadPlugin(String name) {
-		if (!plugins.containsKey(name)) {
-			return;
-		}
-		Plugin plugin = plugins.get(name);
-		plugin.onDisable();
-		plugins.remove(name);
-	}
-
-	private PluginManager() {
+	
+	public Plugin getPlugin(String name){
+		Optional<Plugin> pl = plugins.stream().filter(p -> p.getName().equals(name)).findFirst();
+		if(pl.isPresent())
+			return pl.get();
+		return null;
 	}
 }
