@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
 	<name>PigSubUtils</name>
-	<comment></comment>
-	<projects/>
-	<natures>
-		<nature>org.eclipse.buildship.core.gradleprojectnature</nature>
-	</natures>
+	<comment>Project PigSubUtils created by Buildship.</comment>
+	<projects>
+	</projects>
 	<buildSpec>
 		<buildCommand>
 			<name>org.eclipse.buildship.core.gradleprojectbuilder</name>
-			<arguments/>
+			<arguments>
+			</arguments>
 		</buildCommand>
 	</buildSpec>
-	<linkedResources/>
-	<filteredResources/>
+	<natures>
+		<nature>org.eclipse.buildship.core.gradleprojectnature</nature>
+	</natures>
 </projectDescription>
