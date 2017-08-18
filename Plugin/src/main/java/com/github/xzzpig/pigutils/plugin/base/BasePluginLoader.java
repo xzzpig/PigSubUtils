@@ -35,11 +35,6 @@ public abstract class BasePluginLoader implements PluginLoader {
 	}
 
 	@Override
-	public void unloadNodify(Plugin plugin) {
-		plugin.onEnable();
-	}
-
-	@Override
 	public boolean needFailedNodify() {
 		return false;
 	}
@@ -82,5 +77,10 @@ public abstract class BasePluginLoader implements PluginLoader {
 			waitMap.get(plugin.getName()).forEach(r -> r.run());
 			waitMap.remove(plugin.getName());
 		}
+	}
+	
+	@Override
+	public boolean needOtherUnloadNodify() {
+		return false;
 	}
 }
