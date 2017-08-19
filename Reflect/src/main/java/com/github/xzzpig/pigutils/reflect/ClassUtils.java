@@ -5,8 +5,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Stream;
 
 import com.github.xzzpig.pigutils.annoiation.NotNull;
 import com.github.xzzpig.pigutils.annoiation.Nullable;
@@ -152,25 +154,11 @@ public class ClassUtils<T> {
 		}
 		Object[] args2Stream = args;
 		try {
-			Constructor<T> constructor = Stream
-					.concat(Stream.of(clazz.getDeclaredConstructors()), Stream.of(clazz.getConstructors())).distinct()
-					.map(cons -> (Constructor<T>) cons).filter(cons -> cons.getParameterCount() == args2Stream.length)
-					.filter(cons -> {
-						for (int i = 0; i < cons.getParameters().length; i++) {
-							if (args2Stream[i] == null)
-								continue;
-							Parameter parameter = cons.getParameters()[i];
-							if (!parameter.getType().isInstance(args2Stream[i])) {
-								ClassUtils<?> argCU = new ClassUtils<>(args2Stream[i].getClass());
-								if (!argCU.hasField("TYPE"))
-									return false;
-								if (!argCU.getFieldUtils("TYPE").get(args2Stream[i], Class.class)
-										.isAssignableFrom(parameter.getType()))
-									return false;
-							}
-						}
-						return true;
-					}).findFirst().get();
+			List<Constructor<?>> list = new ArrayList<>(Arrays.asList(clazz.getDeclaredConstructors()));
+			list.addAll(Arrays.asList(clazz.getConstructors()));
+			Constructor<T> constructor = list.stream().distinct().map(cons -> (Constructor<T>) cons)
+					.filter(cons -> cons.getParameterCount() == args2Stream.length)
+					.filter(cons -> isParameterMarch(cons.getParameters(), args2Stream)).findFirst().get();
 			checkConstructorArgs(args);
 			boolean access = constructor.isAccessible();
 			try {
