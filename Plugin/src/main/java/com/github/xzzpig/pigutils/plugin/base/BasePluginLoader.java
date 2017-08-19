@@ -78,9 +78,28 @@ public abstract class BasePluginLoader implements PluginLoader {
 			waitMap.remove(plugin.getName());
 		}
 	}
-	
+
 	@Override
 	public boolean needOtherUnloadNodify() {
 		return false;
+	}
+
+	protected static BasePlugin setPluginName(BasePlugin plugin, String name) {
+		plugin.name = name;
+		return plugin;
+	}
+
+	protected static BasePlugin setPluginDepends(BasePlugin plugin, String[] depends) {
+		plugin.depends = depends == null ? new String[0] : depends;
+		return plugin;
+	}
+
+	protected static BasePlugin setPluginInfo(BasePlugin plugin, Map<String, String> info) {
+		plugin.info = info == null ? new HashMap<>() : info;
+		return plugin;
+	}
+
+	protected static Object getRawObject(BasePlugin plugin) {
+		return plugin.rawObject;
 	}
 }

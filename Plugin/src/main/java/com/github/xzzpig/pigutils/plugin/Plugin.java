@@ -14,9 +14,13 @@ public interface Plugin {
 
 	void onEnable();
 
-	default void onReload() {
+	/**
+	 * @return 是否需要完全重载
+	 */
+	default boolean onReload() {
 		onDisable();
 		onEnable();
+		return false;
 	}
 
 	PluginLoader getPluginLoader();
@@ -28,4 +32,8 @@ public interface Plugin {
 			return false;
 		return Stream.of(getDepends()).anyMatch(depend -> depend.equals(pluginName));
 	}
+
+	void setRawObject(Object obj);
+
+	Object getRawObject();
 }

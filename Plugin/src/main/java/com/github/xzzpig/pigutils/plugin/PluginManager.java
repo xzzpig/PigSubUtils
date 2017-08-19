@@ -11,13 +11,15 @@ import com.github.xzzpig.pigutils.annoiation.Nullable;
 import com.github.xzzpig.pigutils.core.Registable;
 import com.github.xzzpig.pigutils.plugin.PluginLoader.PluginLoadResult;
 import com.github.xzzpig.pigutils.plugin.java.JavaPluginLoader;
+import com.github.xzzpig.pigutils.plugin.script.ScriptPluginLoader;
 
 public class PluginManager implements Registable<PluginLoader> {
 
-	public static final PluginManager DefaultPluginManager = new PluginManager().register(new JavaPluginLoader());
+	public static final PluginManager DefaultPluginManager = new PluginManager().register(new JavaPluginLoader())
+			.register(new ScriptPluginLoader());
 
-	List<PluginLoader> pluginLoaders = new ArrayList<>();
-	List<Plugin> plugins = new LinkedList<>();
+	protected List<PluginLoader> pluginLoaders = new ArrayList<>();
+	protected List<Plugin> plugins = new LinkedList<>();
 
 	public PluginManager() {
 	}
@@ -45,6 +47,7 @@ public class PluginManager implements Registable<PluginLoader> {
 		PluginLoadResult result = aresult.get();
 		if (result == PluginLoadResult.SUCCESS) {
 			plugins.add(p);
+			p.setRawObject(obj);
 			if (pluginLoader.needSuccessNodify())
 				pluginLoader.successNodify(this, p);
 			nodiyOtherSuccess(p);
@@ -82,7 +85,15 @@ public class PluginManager implements Registable<PluginLoader> {
 	}
 
 	public PluginManager reloadPlugin(Plugin plugin) {
-		plugin.onReload();
+		if (plugin == null)
+			return this;
+		if (plugin.onReload())
+			deepReloadPlugin(plugin);
+		return this;
+	}
+
+	PluginManager deepReloadPlugin(Plugin plugin) {
+		plugin.getPluginLoader().reloadPlugin(plugin);
 		return this;
 	}
 
@@ -95,5 +106,9 @@ public class PluginManager implements Registable<PluginLoader> {
 		if (pl.isPresent())
 			return pl.get();
 		return null;
+	}
+
+	public PluginManager reloadPlugin(String name) {
+		return reloadPlugin(getPlugin(name));
 	}
 }

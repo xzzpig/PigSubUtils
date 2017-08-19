@@ -14,6 +14,7 @@ public abstract class BasePlugin implements Plugin {
 	protected String[] depends = {};
 	protected PluginLoader pluginLoader;
 	protected PluginManager pluginManager;
+	protected Object rawObject;
 
 	public BasePlugin() {
 	}
@@ -43,4 +44,13 @@ public abstract class BasePlugin implements Plugin {
 		return pluginManager;
 	}
 
+	@Override
+	public void setRawObject(Object obj) {
+		this.rawObject = obj;
+	}
+
+	@Override
+	public Object getRawObject() {
+		return rawObject;
+	}
 }

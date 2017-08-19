@@ -1,6 +1,7 @@
 package com.github.xzzpig.pigutils.plugin;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.github.xzzpig.pigutils.annoiation.NotNull;
@@ -37,6 +38,16 @@ public interface PluginLoader {
 
 	void unloadPlugin(Plugin plugin);
 
+	default void reloadPlugin(@NotNull Plugin plugin) {
+		List<Plugin> subPlugins = plugin.getPluginManager().plugins.stream().filter(p -> p.isDependOn(plugin.getName()))
+				.collect(ArrayList<Plugin>::new, ArrayList::add, ArrayList::addAll);
+		Object rawObject = plugin.getRawObject();
+		PluginManager manager = plugin.getPluginManager();
+		manager.unloadPlugin(plugin);
+		subPlugins.forEach(p -> p.getPluginManager().deepReloadPlugin(p));
+		manager.loadPlugin(rawObject);
+	}
+
 	boolean accept(@Nullable Object obj);
 
 	boolean needSuccessNodify();
@@ -62,14 +73,15 @@ public interface PluginLoader {
 	boolean needUnloadNodify();
 
 	default void unloadNodify(@NotNull Plugin plugin) {
+		plugin.onDisable();
 		plugin.getPluginManager().plugins.stream().filter(p -> p.isDependOn(plugin.getName()))
 				.collect(ArrayList<Plugin>::new, ArrayList::add, ArrayList::addAll)
 				.forEach(plugin.getPluginManager()::unloadPlugin);
-		plugin.onDisable();
 	}
 
 	boolean needWaitNodify();
 
 	default void waitNodify(@NotNull PluginManager manager, @NotNull Object obj, @Nullable Plugin plugin) {
 	}
+
 }
