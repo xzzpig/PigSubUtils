@@ -53,4 +53,22 @@ public abstract class BasePlugin implements Plugin {
 	public Object getRawObject() {
 		return rawObject;
 	}
+
+	@Override
+	public boolean onReload() {
+		onDisable();
+		onEnable();
+		return false;
+	}
+
+	@Override
+	public boolean isDependOn(String pluginName) {
+		if (getDepends() == null)
+			return false;
+		for (String depend : getDepends()) {
+			if (depend.equals(pluginName))
+				return true;
+		}
+		return false;
+	}
 }

@@ -5,15 +5,24 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 import com.github.xzzpig.pigutils.annoiation.NotNull;
 import com.github.xzzpig.pigutils.annoiation.Nullable;
 import com.github.xzzpig.pigutils.core.Registable;
-import com.github.xzzpig.pigutils.plugin.PluginLoader.PluginLoadResult;
 import com.github.xzzpig.pigutils.plugin.java.JavaPluginLoader;
 import com.github.xzzpig.pigutils.plugin.script.ScriptPluginLoader;
 
 public class PluginManager implements Registable<PluginLoader> {
+
+	/**
+	 * 几个内置的 {@link PluginLoader#order()} 建议值
+	 */
+	public static class PluginLoaderOrder {
+		public static final int DEFAULT = 0;
+		public static final int HIGH = 100;
+		public static final int LOW = -100;
+	}
 
 	public static final PluginManager DefaultPluginManager = new PluginManager().register(new JavaPluginLoader())
 			.register(new ScriptPluginLoader());
@@ -76,11 +85,11 @@ public class PluginManager implements Registable<PluginLoader> {
 		return unloadPlugin(getPlugin(name));
 	}
 
-	private void nodiyOtherSuccess(Plugin p) {
+	protected void nodiyOtherSuccess(Plugin p) {
 		pluginLoaders.stream().filter(PluginLoader::needOtherSuccessNodify).forEach(pl -> pl.othersuccessNodify(p));
 	}
 
-	private void nodifyOtherUnload(Plugin p) {
+	protected void nodifyOtherUnload(Plugin p) {
 		pluginLoaders.stream().filter(PluginLoader::needOtherUnloadNodify).forEach(pl -> pl.otherunloadNodify(p));
 	}
 
@@ -92,7 +101,7 @@ public class PluginManager implements Registable<PluginLoader> {
 		return this;
 	}
 
-	PluginManager deepReloadPlugin(Plugin plugin) {
+	public PluginManager deepReloadPlugin(Plugin plugin) {
 		plugin.getPluginLoader().reloadPlugin(plugin);
 		return this;
 	}
@@ -110,5 +119,13 @@ public class PluginManager implements Registable<PluginLoader> {
 
 	public PluginManager reloadPlugin(String name) {
 		return reloadPlugin(getPlugin(name));
+	}
+
+	public String[] listPlugins() {
+		return plugins.stream().map(p -> p.getName()).toArray(String[]::new);
+	}
+
+	public Stream<Plugin> getPluginStream() {
+		return plugins.stream();
 	}
 }

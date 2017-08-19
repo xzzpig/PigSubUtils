@@ -5,17 +5,19 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import com.github.xzzpig.pigutils.plugin.Plugin;
+import com.github.xzzpig.pigutils.plugin.PluginLoadResult;
 import com.github.xzzpig.pigutils.plugin.PluginManager;
+import com.github.xzzpig.pigutils.plugin.PluginManager.PluginLoaderOrder;
 import com.github.xzzpig.pigutils.plugin.base.BasePlugin;
 import com.github.xzzpig.pigutils.plugin.base.BasePluginLoader;
 import com.github.xzzpig.pigutils.plugin.url.PluginClassloader;
@@ -62,7 +64,7 @@ public class ScriptPluginLoader extends BasePluginLoader {
 		} catch (Exception e) {
 		}
 
-		if (Stream.of(depends).filter(pluginName -> !manager.isPluginLoaded(pluginName)).count() != 0) {
+		if (Arrays.asList(depends).stream().filter(pluginName -> !manager.isPluginLoaded(pluginName)).count() != 0) {
 			result.set(PluginLoadResult.WAIT);
 			return setPluginDepends(setPluginName(new ScirptPlugin().setScriptEngine(engine), name), depends);
 		}
@@ -84,7 +86,7 @@ public class ScriptPluginLoader extends BasePluginLoader {
 		setPluginName(plugin, name);
 		setPluginDepends(plugin, depends);
 		setPluginInfo(plugin, info);
-		classloader.addParents(Stream.of(depends).map(manager::getPlugin)
+		classloader.addParents(Arrays.asList(depends).stream().map(manager::getPlugin)
 				.filter(p -> p.getClass().getClassLoader() instanceof URLClassLoader)
 				.map(p -> (URLClassLoader) p.getClass().getClassLoader()).toArray(URLClassLoader[]::new));
 		return plugin;

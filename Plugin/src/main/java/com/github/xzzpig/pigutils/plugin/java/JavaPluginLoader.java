@@ -12,7 +12,9 @@ import java.util.zip.ZipEntry;
 import com.github.xzzpig.pigutils.json.JSONObject;
 import com.github.xzzpig.pigutils.json.JSONTokener;
 import com.github.xzzpig.pigutils.plugin.Plugin;
+import com.github.xzzpig.pigutils.plugin.PluginLoadResult;
 import com.github.xzzpig.pigutils.plugin.PluginManager;
+import com.github.xzzpig.pigutils.plugin.PluginManager.PluginLoaderOrder;
 import com.github.xzzpig.pigutils.plugin.url.URLPluginInfo;
 import com.github.xzzpig.pigutils.plugin.url.URLPluginLoader;
 
@@ -74,5 +76,4 @@ public class JavaPluginLoader extends URLPluginLoader {
 			return false;
 		return true;
 	}
-
 }

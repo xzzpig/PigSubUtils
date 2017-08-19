@@ -102,4 +102,41 @@ public abstract class BasePluginLoader implements PluginLoader {
 	protected static Object getRawObject(BasePlugin plugin) {
 		return plugin.rawObject;
 	}
+
+	@Override
+	public void reloadPlugin(Plugin plugin) {
+		List<Plugin> subPlugins = getSubPlugins(plugin);
+		Object rawObject = plugin.getRawObject();
+		PluginManager manager = plugin.getPluginManager();
+		manager.unloadPlugin(plugin);
+		subPlugins.forEach(p -> p.getPluginManager().deepReloadPlugin(p));
+		manager.loadPlugin(rawObject);
+	}
+
+	protected List<Plugin> getSubPlugins(Plugin plugin) {
+		List<Plugin> ps = new ArrayList<>();
+		PluginManager manager = plugin.getPluginManager();
+		for (String p : manager.listPlugins()) {
+			Plugin sub = manager.getPlugin(p);
+			if (sub.isDependOn(plugin.getName()))
+				ps.add(sub);
+		}
+		return ps;
+	}
+
+	@Override
+	public void unloadNodify(Plugin plugin) {
+		plugin.onDisable();
+		for (Plugin sub : getSubPlugins(plugin)) {
+			sub.getPluginManager().unloadPlugin(sub);
+		}
+	}
+
+	@Override
+	public void failedNodify(Object obj) {
+	}
+
+	@Override
+	public void otherunloadNodify(Plugin plugin) {
+	}
 }

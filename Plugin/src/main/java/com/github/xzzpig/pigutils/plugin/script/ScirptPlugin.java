@@ -36,4 +36,8 @@ public class ScirptPlugin extends URLPlugin {
 		}
 	}
 
+	@Override
+	public boolean onReload() {
+		return true;
+	}
 }

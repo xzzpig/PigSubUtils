@@ -1,7 +1,6 @@
 package com.github.xzzpig.pigutils.plugin;
 
 import java.util.Map;
-import java.util.stream.Stream;
 
 public interface Plugin {
 	String[] getDepends();
@@ -17,21 +16,13 @@ public interface Plugin {
 	/**
 	 * @return 是否需要完全重载
 	 */
-	default boolean onReload() {
-		onDisable();
-		onEnable();
-		return false;
-	}
+	boolean onReload();
 
 	PluginLoader getPluginLoader();
 
 	PluginManager getPluginManager();
 
-	default boolean isDependOn(String pluginName) {
-		if (getDepends() == null)
-			return false;
-		return Stream.of(getDepends()).anyMatch(depend -> depend.equals(pluginName));
-	}
+	boolean isDependOn(String pluginName);
 
 	void setRawObject(Object obj);
 

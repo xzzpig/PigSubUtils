@@ -3,10 +3,11 @@ package com.github.xzzpig.pigutils.plugin.url;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
 
 import com.github.xzzpig.pigutils.plugin.Plugin;
+import com.github.xzzpig.pigutils.plugin.PluginLoadResult;
 import com.github.xzzpig.pigutils.plugin.PluginManager;
 import com.github.xzzpig.pigutils.plugin.base.BasePlugin;
 import com.github.xzzpig.pigutils.plugin.base.BasePluginLoader;
@@ -46,13 +47,13 @@ public abstract class URLPluginLoader extends BasePluginLoader {
 		} catch (Exception e) {
 			throw new IllegalArgumentException(e);
 		}
-		if (Stream.of(clPluginInfo.depends).filter(name -> !manager.isPluginLoaded(name)).count() != 0) {
+		if (Arrays.asList(clPluginInfo.depends).stream().filter(name -> !manager.isPluginLoaded(name)).count() != 0) {
 			result.set(PluginLoadResult.WAIT);
 			return new WaitFakePlugin(clPluginInfo);
 		}
 		@SuppressWarnings("resource")
 		PluginClassloader classloader = new PluginClassloader(this.getClass().getClassLoader(), url);
-		classloader.addParents(Stream.of(clPluginInfo.depends).map(manager::getPlugin)
+		classloader.addParents(Arrays.asList(clPluginInfo.depends).stream().map(manager::getPlugin)
 				.filter(p -> p.getClass().getClassLoader() instanceof URLClassLoader)
 				.map(p -> (URLClassLoader) p.getClass().getClassLoader()).toArray(URLClassLoader[]::new));
 		try {
