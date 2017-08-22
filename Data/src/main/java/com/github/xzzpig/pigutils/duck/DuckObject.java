@@ -2,26 +2,32 @@ package com.github.xzzpig.pigutils.duck;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.Proxy;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.github.xzzpig.pigutils.annoiation.BaseOnClass;
 import com.github.xzzpig.pigutils.annoiation.BaseOnPackage;
+import com.github.xzzpig.pigutils.annoiation.Const;
 import com.github.xzzpig.pigutils.annoiation.NotNull;
 import com.github.xzzpig.pigutils.annoiation.Nullable;
 import com.github.xzzpig.pigutils.data.DataUtils;
 import com.github.xzzpig.pigutils.data.DataUtils.EachResult;
 import com.github.xzzpig.pigutils.reflect.AnnotatedElementCheckEvent;
 import com.github.xzzpig.pigutils.reflect.ClassUtils;
+import com.github.xzzpig.pigutils.reflect.MethodUtils;
 
 /**
  * 鸭子对象<br/>
- * 可调用封装的Object的方法<br/>
- * 可获取/设置封装的Object的Field<br/>
+ * 可调用封装的Object的方法(返回 {@link DuckObject})<br/>
+ * 可获取/设置封装的Object的Field( {@link DuckObject}可自动转换)<br/>
  * 
  */
 @BaseOnPackage("com.github.xzzpig.pigutils.reflect")
+@Const(constField = true)
 public final class DuckObject {
 
 	static {
@@ -59,7 +65,7 @@ public final class DuckObject {
 
 	private ClassUtils<?> cu;
 
-	private Object obj;
+	public final Object object;
 
 	/**
 	 * 创建对象并封装为DuckObject
@@ -73,8 +79,8 @@ public final class DuckObject {
 		if (clazz == null)
 			throw new IllegalArgumentException(new NullPointerException("clazz can not be Null"));
 		cu = new ClassUtils<>(clazz);
-		obj = cu.newInstance(args);
-		if (obj == null)
+		object = cu.newInstance(args);
+		if (object == null)
 			throw new IllegalArgumentException(new NullPointerException("obj can not be Null"));
 	}
 
@@ -85,7 +91,7 @@ public final class DuckObject {
 	public DuckObject(@NotNull Object obj) {
 		if (obj == null)
 			throw new IllegalArgumentException(new NullPointerException("obj can not be Null"));
-		this.obj = obj;
+		this.object = obj;
 		this.cu = new ClassUtils<>(obj.getClass());
 	}
 
@@ -94,15 +100,15 @@ public final class DuckObject {
 	}
 
 	public <T> T getField(String fieldName, Class<T> clazz) {
-		return cu.getFieldUtils(fieldName).get(obj, clazz);
+		return cu.getFieldUtils(fieldName).get(object, clazz);
 	}
 
-	public Object getObject() {
-		return obj;
+	public DuckObject getField(String filedName) {
+		return new DuckObject(getField(filedName, Object.class));
 	}
 
 	public Class<?> getType() {
-		return obj.getClass();
+		return object.getClass();
 	}
 
 	/**
@@ -110,10 +116,15 @@ public final class DuckObject {
 	 * 
 	 * @param methodName
 	 *            方法名称
-	 * @return 方法返回值
+	 * @return new {@link DuckObject}(方法返回值)
 	 */
-	public Object invoke(@NotNull String methodName) {
+	public DuckObject invoke(@NotNull String methodName) {
 		return invoke(methodName, new Object[0]);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T getObject(Class<T> clazz) {
+		return (T) object;
 	}
 
 	/**
@@ -123,10 +134,41 @@ public final class DuckObject {
 	 *            方法名称
 	 * @param parameters
 	 *            方法参数
-	 * @return 方法返回值
+	 * @return new {@link DuckObject}(方法返回值)
 	 */
-	public Object invoke(@NotNull String methodName, @Nullable Object... parameters) {
-		return cu.getMethodUtils(methodName).invoke(obj, parameters);
+	public DuckObject invoke(@NotNull String methodName, @Nullable Object... parameters) {
+		MethodUtils mu = cu.getMethodUtils(methodName, parameters);
+		if (mu == null) {
+			Object objs[] = Arrays.copyOf(parameters, parameters.length);
+			mu = findMethod(methodName, cu, objs, 0);
+			parameters = objs;
+		}
+		if (mu == null)
+			return null;
+		Object obj = cu.getMethodUtils(methodName).invoke(object, parameters);
+		if (obj == null)
+			return null;
+		else
+			return new DuckObject(obj);
+	}
+
+	public static MethodUtils findMethod(String name, ClassUtils<?> cu, Object[] objs, int i) {
+		MethodUtils mu;
+		if (i == objs.length - 1)
+			mu = cu.getMethodUtils(name, objs);
+		else
+			mu = findMethod(name, cu, objs, i + 1);
+		if (mu != null)
+			return mu;
+		if (objs[i] instanceof DuckObject)
+			objs[i] = ((DuckObject) objs[i]).object;
+		else
+			objs[i] = new DuckObject(objs[i]);
+		if (i == objs.length - 1)
+			mu = cu.getMethodUtils(name, objs);
+		else
+			mu = findMethod(name, cu, objs, i + 1);
+		return mu;
 	}
 
 	/**
@@ -194,9 +236,56 @@ public final class DuckObject {
 	}
 
 	public DuckObject setField(String fieldName, Object value) {
-		if (!cu.getFieldUtils(fieldName).set(this.obj, value)) {
+		if (cu.getFieldUtils(fieldName).getField().getType() != DuckObject.class && value instanceof DuckObject) {
+			return setField(fieldName, ((DuckObject) value).object);
+		}
+		if (!cu.getFieldUtils(fieldName).set(this.object, value)) {
 			throw new RuntimeException(new NoSuchFieldException(fieldName + " not Found"));
 		}
 		return this;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof DuckObject))
+			return false;
+		return ((DuckObject) obj).object.equals(object);
+	}
+
+	@Override
+	public String toString() {
+		return object.toString();
+	}
+
+	@Override
+	public int hashCode() {
+		return object.hashCode();
+	}
+
+	/**
+	 * 将this使用
+	 * {@link Proxy#newProxyInstance(ClassLoader, Class[], InvocationHandler)}
+	 * 转换成对应Object
+	 * 
+	 * @param mainInterface
+	 * @param otherInterface
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> T cast(@NotNull Class<T> mainInterface, @NotNull Class<?>... otherInterface) {
+		Class<?>[] clazzs = Arrays.copyOf(otherInterface, otherInterface.length + 1);
+		clazzs[otherInterface.length] = mainInterface;
+		Object obj = Proxy.newProxyInstance(getClass().getClassLoader(), clazzs, new InvocationHandler() {
+			@Override
+			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+				DuckObject duckObj = DuckObject.this.invoke(method.getName(), args);
+				if (duckObj == null)
+					return null;
+				else
+					return duckObj.object;
+			}
+		});
+		return (T) obj;
+	}
+
 }

@@ -15,7 +15,7 @@ public class PluginClassloader extends URLClassLoader {
 		return this;
 	}
 
-	private void addURLs(URL... urls) {
+	public void addURLs(URL... urls) {
 		Arrays.asList(urls).forEach(this::addURL);
 	}
 }
