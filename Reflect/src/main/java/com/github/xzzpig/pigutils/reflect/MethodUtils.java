@@ -4,8 +4,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
+import java.util.function.Consumer;
 
 import com.github.xzzpig.pigutils.annoiation.NotNull;
+import com.github.xzzpig.pigutils.core.AsyncRunner;
+import com.github.xzzpig.pigutils.core.AsyncRunner.RunResult;
 import com.github.xzzpig.pigutils.event.Event;
 
 public class MethodUtils {
@@ -100,5 +103,11 @@ public class MethodUtils {
 		}
 		method.setAccessible(access);
 		return result;
+	}
+
+	public MethodUtils invokeAsync(Object obj, Consumer<RunResult<Object>> callback, int timeout,
+			Object... parameters) {
+		new AsyncRunner<>(() -> invoke(obj, parameters), callback, timeout).run();
+		return this;
 	}
 }
