@@ -7,7 +7,7 @@ import java.lang.reflect.Parameter;
 import java.util.List;
 import java.util.Map;
 
-import com.github.xzzpig.pigutils.core.Transformer;
+import com.github.xzzpig.pigutils.core.TransformManager;
 import com.github.xzzpig.pigutils.json.JSONArray;
 import com.github.xzzpig.pigutils.json.JSONObject;
 
@@ -60,7 +60,7 @@ public class JsonUtils {
 					if (obj != null) {
 						value = obj;
 					} else {
-						obj = Transformer.transform(values, parameter.getType());
+						obj = TransformManager.transform(values, parameter.getType());
 						if (obj != null) {
 							value = obj;
 						}

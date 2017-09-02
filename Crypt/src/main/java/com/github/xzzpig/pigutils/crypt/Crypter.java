@@ -1,8 +1,10 @@
 package com.github.xzzpig.pigutils.crypt;
 
+import java.util.Map;
 import java.util.function.Predicate;
 
-import com.github.xzzpig.pigutils.core.Transformer;
+import com.github.xzzpig.pigutils.core.TransformManager;
+import com.github.xzzpig.pigutils.core.TransformManager.Transformer;
 import com.github.xzzpig.pigutils.crypt.md5.FileMD5Crypter;
 import com.github.xzzpig.pigutils.crypt.md5.MD5Crypter;
 
@@ -30,6 +32,14 @@ public abstract class Crypter {
 			else
 				return null;
 		}
+
+		@Override
+		public Crypter transform(String str, Map<Object, Object> extras) {
+			if (str.equals("crypt." + crypter.getCryptType()))
+				return crypter;
+			else
+				return null;
+		}
 	}
 
 	static {
@@ -45,7 +55,7 @@ public abstract class Crypter {
 	 * @return
 	 */
 	public static Cryptable crypt(String type, Object... objs) {
-		Crypter crypter = Transformer.transform("crypt." + type, Crypter.class);
+		Crypter crypter = TransformManager.transform("crypt." + type, Crypter.class);
 		return crypter == null ? null : crypter.crypt(objs);
 	}
 
@@ -57,7 +67,7 @@ public abstract class Crypter {
 	 * @return
 	 */
 	public static Decryptable decrypt(String type, Object... objs) {
-		Crypter crypter = Transformer.transform("crypt." + type, Crypter.class);
+		Crypter crypter = TransformManager.transform("crypt." + type, Crypter.class);
 		return crypter == null ? null : crypter.decrypt(objs);
 	}
 
@@ -67,7 +77,7 @@ public abstract class Crypter {
 	 * @param crypter
 	 */
 	public static void regCrypter(Crypter crypter) {
-		Transformer.addTransformer(new CrypterTransformr(crypter));
+		TransformManager.addTransformer(new CrypterTransformr(crypter));
 	}
 
 	/**
@@ -76,7 +86,7 @@ public abstract class Crypter {
 	 * @param crypter
 	 */
 	public static void unregCrypter(Crypter crypter) {
-		Transformer.transformers.removeIf(((Predicate<Transformer<?, ?>>) (t -> t instanceof CrypterTransformr))
+		TransformManager.transformers.removeIf(((Predicate<Transformer<?, ?>>) (t -> t instanceof CrypterTransformr))
 				.and((t) -> ((CrypterTransformr) t).crypter.getCryptType().equalsIgnoreCase(crypter.getCryptType())));
 	}
 
