@@ -19,23 +19,6 @@ public class TransformManager {
 
 	@FunctionalInterface
 	public static interface Transformer<F, R> {
-		R transform(F f, Map<Object, Object> extras);
-
-		default String useFor() {
-			return "Default";
-		};
-
-		default R transform(F f) {
-			return transform(f, (Map<Object, Object>) null);
-		};
-
-		default String mark() {
-			return null;
-		}
-
-		default void onError(Exception error) {
-		}
-
 		default boolean accept(Object o) {
 			try {
 				@SuppressWarnings({ "unchecked", "unused" })
@@ -44,6 +27,23 @@ public class TransformManager {
 			} catch (Exception e) {
 				return false;
 			}
+		}
+
+		default String mark() {
+			return null;
+		};
+
+		default void onError(Exception error) {
+		};
+
+		default R transform(F f) {
+			return transform(f, (Map<Object, Object>) null);
+		}
+
+		R transform(F f, Map<Object, Object> extras);
+
+		default String useFor() {
+			return "Default";
 		}
 	}
 
@@ -61,18 +61,8 @@ public class TransformManager {
 			Consumer<Exception> errorConsumer) {
 		transformers.add(new Transformer<F, R>() {
 			@Override
-			public R transform(F f, Map<Object, Object> extras) {
-				return transformer.transform(f, extras);
-			}
-
-			@Override
 			public String mark() {
 				return mark;
-			}
-
-			@Override
-			public String useFor() {
-				return useFor;
 			}
 
 			@Override
@@ -80,7 +70,29 @@ public class TransformManager {
 				if (errorConsumer != null)
 					errorConsumer.accept(error);
 			}
+
+			@Override
+			public R transform(F f, Map<Object, Object> extras) {
+				return transformer.transform(f, extras);
+			}
+
+			@Override
+			public String useFor() {
+				return useFor;
+			}
 		});
+	}
+
+	public static <F, R> R transform(F from, Class<R> rc) {
+		return transform(from, rc, null, null);
+	}
+
+	public static <F, R> R transform(F from, Class<R> rc, Map<Object, Object> extras) {
+		return transform(from, rc, null, extras);
+	}
+
+	public static <F, R> R transform(F from, Class<R> rc, String useFor) {
+		return transform(from, rc, useFor, null);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -102,17 +114,5 @@ public class TransformManager {
 				return r;
 		}
 		return null;
-	}
-
-	public static <F, R> R transform(F from, Class<R> rc, String useFor) {
-		return transform(from, rc, useFor, null);
-	}
-
-	public static <F, R> R transform(F from, Class<R> rc, Map<Object, Object> extras) {
-		return transform(from, rc, null, extras);
-	}
-
-	public static <F, R> R transform(F from, Class<R> rc) {
-		return transform(from, rc, null, null);
 	}
 }

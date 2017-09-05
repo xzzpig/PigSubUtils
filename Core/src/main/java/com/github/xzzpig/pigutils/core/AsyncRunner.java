@@ -1,7 +1,7 @@
 package com.github.xzzpig.pigutils.core;
 
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -17,17 +17,8 @@ import com.github.xzzpig.pigutils.annoiation.Nullable;
  */
 public class AsyncRunner {
 
-	@FunctionalInterface
-	public static interface AsyncRunnable<R> {
-		R run() throws Exception;
-	}
-
 	public static abstract class AsyncRunInstance<R> implements AsyncRunnable<R> {
 		protected abstract void accept(RunResult<R> result);
-
-		protected long timeout() {
-			return -1;
-		}
 
 		private void exec() {
 			try {
@@ -41,20 +32,25 @@ public class AsyncRunner {
 				accept(new RunResult<R>(null, RunResult_EXCEPTION, e));
 			}
 		}
+
+		protected long timeout() {
+			return -1;
+		}
 	}
 
-	public static final int RunResult_SUCCESS = 0;
-	public static final int RunResult_TIMEOUT = 1;
-	public static final int RunResult_EXCEPTION = 2;
+	@FunctionalInterface
+	public static interface AsyncRunnable<R> {
+		R run() throws Exception;
+	}
 
 	/**
 	 * 执行结果
 	 */
 	public static class RunResult<R> {
 
+		public final Exception exception;
 		public final R result;
 		public final int resultCode;
-		public final Exception exception;
 
 		RunResult(R result, int code, Exception error) {
 			this.result = result;
@@ -70,6 +66,114 @@ public class AsyncRunner {
 				return "Result:Exception|" + exception.toString();
 			return "Result:Timeout";
 		}
+	}
+	public static final int RunResult_EXCEPTION = 2;
+	public static final int RunResult_SUCCESS = 0;
+
+	public static final int RunResult_TIMEOUT = 1;
+
+	private AtomicBoolean closed = new AtomicBoolean(false);
+
+	
+	AtomicInteger poolsize;
+
+	ConcurrentLinkedQueue<AsyncRunInstance<?>> runList;
+
+	ConcurrentLinkedQueue<Thread> threadpool;
+
+	public final boolean TimeoutSupport;
+
+	/**
+	 * @param poolsize
+	 *            并发数
+	 * @param timeoutSupport
+	 *            是否支持timeout,如果支持将创建poolsize*2的线程,否则poolsize*1
+	 */
+	public AsyncRunner(int poolsize, boolean timeoutSupport) {
+		this.TimeoutSupport = timeoutSupport;
+		threadpool = new ConcurrentLinkedQueue<>();
+		this.poolsize = new AtomicInteger(poolsize);
+		runList = new ConcurrentLinkedQueue<>();
+		updatePool();
+	}
+
+	/**
+	 * 待所有执行完后停止该runner(非阻塞)
+	 */
+	public AsyncRunner close() {
+		closed.set(true);
+		return this;
+	}
+
+	/**
+	 * close().join()
+	 */
+	public void closed() {
+		this.close().join();
+	}
+
+	public int getPoolSize() {
+		return poolsize.get();
+	}
+
+	public void join() {
+		Thread t;
+		while ((t = threadpool.poll()) != null) {
+			try {
+				t.join();
+			} catch (InterruptedException e) {
+			}
+		}
+	}
+
+	/**
+	 * 改变并发数<br/>
+	 * 只有线程被挂起时能减小
+	 */
+	public AsyncRunner resizePool(int size) {
+		poolsize.set(size);
+		updatePool();
+		return this;
+	}
+
+	/**
+	 * 异步执行instance
+	 */
+	public AsyncRunner run(AsyncRunInstance<?> instance) {
+		synchronized (runList) {
+			runList.add(instance);
+			runList.notifyAll();
+		}
+		return this;
+	}
+
+	/**
+	 * @param runnable
+	 *            异步执行的内容
+	 * @param callback
+	 *            执行完的回掉函数
+	 * @param timeout
+	 *            超时(需要 {@link AsyncRunner#TimeoutSupport}==true)
+	 */
+	public <T> AsyncRunner run(@NotNull AsyncRunnable<T> runnable, @Nullable Consumer<RunResult<T>> callback,
+			long timeout) {
+		return run(new AsyncRunInstance<T>() {
+			@Override
+			public void accept(RunResult<T> result) {
+				if (callback != null)
+					callback.accept(result);
+			}
+
+			@Override
+			public T run() throws Exception {
+				return runnable.run();
+			}
+
+			@Override
+			protected long timeout() {
+				return timeout;
+			}
+		});
 	}
 
 	private void run(Thread thread) {
@@ -114,7 +218,7 @@ public class AsyncRunner {
 			timeoutWatcher.start();
 		}
 		while (!thread.isInterrupted()) {
-			AsyncRunInstance<?> asyncRunInstance = runList.pollFirst();
+			AsyncRunInstance<?> asyncRunInstance = runList.poll();
 			if (asyncRunInstance != null) {
 				time.set(asyncRunInstance.timeout());
 				synchronized (time) {
@@ -143,68 +247,6 @@ public class AsyncRunner {
 			timeoutWatcher.interrupt();
 	}
 
-	LinkedList<Thread> threadpool;
-
-	AtomicInteger poolsize;
-
-	public final boolean TimeoutSupport;
-
-	/**
-	 * @param poolsize
-	 *            并发数
-	 * @param timeoutSupport
-	 *            是否支持timeout,如果支持将创建poolsize*2的线程,否则poolsize*1
-	 */
-	public AsyncRunner(int poolsize, boolean timeoutSupport) {
-		this.TimeoutSupport = timeoutSupport;
-		threadpool = new LinkedList<>();
-		this.poolsize = new AtomicInteger(poolsize);
-		runList = new LinkedList<>();
-		updatePool();
-	}
-
-	LinkedList<AsyncRunInstance<?>> runList;
-
-	/**
-	 * 异步执行instance
-	 */
-	public AsyncRunner run(AsyncRunInstance<?> instance) {
-		synchronized (runList) {
-			runList.add(instance);
-			runList.notifyAll();
-		}
-		return this;
-	}
-
-	/**
-	 * @param runnable
-	 *            异步执行的内容
-	 * @param callback
-	 *            执行完的回掉函数
-	 * @param timeout
-	 *            超时(需要 {@link AsyncRunner#TimeoutSupport}==true)
-	 */
-	public <T> AsyncRunner run(@NotNull AsyncRunnable<T> runnable, @Nullable Consumer<RunResult<T>> callback,
-			long timeout) {
-		return run(new AsyncRunInstance<T>() {
-			@Override
-			public T run() throws Exception {
-				return runnable.run();
-			}
-
-			@Override
-			public void accept(RunResult<T> result) {
-				if (callback != null)
-					callback.accept(result);
-			}
-
-			@Override
-			protected long timeout() {
-				return timeout;
-			}
-		});
-	}
-
 	void updatePool() {
 		if (closed.get())
 			return;
@@ -231,47 +273,6 @@ public class AsyncRunner {
 				thread.start();
 			}
 		}
-	}
-
-	private AtomicBoolean closed = new AtomicBoolean(false);
-
-	/**
-	 * 待所有执行完后停止该runner(非阻塞)
-	 */
-	public AsyncRunner close() {
-		closed.set(true);
-		return this;
-	}
-
-	public int getPoolSize() {
-		return poolsize.get();
-	}
-
-	public void join() {
-		Thread t;
-		while ((t = threadpool.pollFirst()) != null) {
-			try {
-				t.join();
-			} catch (InterruptedException e) {
-			}
-		}
-	}
-
-	/**
-	 * close().join()
-	 */
-	public void closed() {
-		this.close().join();
-	}
-
-	/**
-	 * 改变并发数<br/>
-	 * 只有线程被挂起时能减小
-	 */
-	public AsyncRunner resizePool(int size) {
-		poolsize.set(size);
-		updatePool();
-		return this;
 	}
 
 }

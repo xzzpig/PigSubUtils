@@ -16,14 +16,14 @@ public class YieldIterator<E> implements Iterator<E>, Iterable<E> {
 		}
 	}
 
-	Thread thread;
-	Consumer<YieldAdapter> consumer;
-	YieldAdapter adapter;
-	E item;
 	AtomicBoolean adapted;
+	YieldAdapter adapter;
+	Consumer<YieldAdapter> consumer;
+	E item;
+	E nextItem;
 	boolean preNexted;
 
-	E nextItem;
+	Thread thread;
 
 	public YieldIterator(Consumer<YieldAdapter> c) {
 		consumer = c;

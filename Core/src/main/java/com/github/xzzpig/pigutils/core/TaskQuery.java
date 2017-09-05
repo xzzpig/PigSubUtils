@@ -25,6 +25,8 @@ public class TaskQuery extends Thread {
 		};
 	}
 
+	private AtomicBoolean closed = new AtomicBoolean(false);
+
 	private LinkedList<Consumer<Exception>> errorList;
 
 	private LinkedList<Runnable> startList, interruptedList;
@@ -62,6 +64,14 @@ public class TaskQuery extends Thread {
 				this.tasks.addLast(task);
 		synchronized (this.tasks) {
 			this.tasks.notifyAll();
+		}
+		return this;
+	}
+
+	public TaskQuery close() {
+		synchronized (tasks) {
+			closed.set(true);
+			tasks.notifyAll();
 		}
 		return this;
 	}
@@ -121,15 +131,5 @@ public class TaskQuery extends Thread {
 				}
 		}
 		oninterrupted();
-	}
-
-	private AtomicBoolean closed = new AtomicBoolean(false);
-
-	public TaskQuery close() {
-		synchronized (tasks) {
-			closed.set(true);
-			tasks.notifyAll();
-		}
-		return this;
 	}
 }
