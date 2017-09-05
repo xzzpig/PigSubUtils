@@ -107,7 +107,14 @@ public class MethodUtils {
 
 	public MethodUtils invokeAsync(Object obj, Consumer<RunResult<Object>> callback, int timeout,
 			Object... parameters) {
-		new AsyncRunner<>(() -> invoke(obj, parameters), callback, timeout).run();
+		if (asyncRunner == null) {
+			asyncRunner = new AsyncRunner(5, true);
+		}
+		asyncRunner.run(() -> invoke(obj, parameters), callback, timeout);
+		// new AsyncRunner<>(() -> invoke(obj, parameters), callback,
+		// timeout).run();
 		return this;
 	}
+
+	public static AsyncRunner asyncRunner = null;
 }

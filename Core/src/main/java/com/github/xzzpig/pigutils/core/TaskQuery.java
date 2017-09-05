@@ -1,6 +1,7 @@
 package com.github.xzzpig.pigutils.core;
 
 import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import com.github.xzzpig.pigutils.annoiation.NotNull;
@@ -13,6 +14,7 @@ public class TaskQuery extends Thread {
 		 */
 		boolean run() throws Exception;
 	}
+
 	public static Task cast(@NotNull Runnable runnable) {
 		return new Task() {
 			@Override
@@ -22,6 +24,7 @@ public class TaskQuery extends Thread {
 			}
 		};
 	}
+
 	private LinkedList<Consumer<Exception>> errorList;
 
 	private LinkedList<Runnable> startList, interruptedList;
@@ -57,6 +60,9 @@ public class TaskQuery extends Thread {
 		if (tasks != null)
 			for (Task task : tasks)
 				this.tasks.addLast(task);
+		synchronized (this.tasks) {
+			this.tasks.notifyAll();
+		}
 		return this;
 	}
 
@@ -65,6 +71,9 @@ public class TaskQuery extends Thread {
 			addTask(task);
 		else
 			tasks.add(index, task);
+		synchronized (tasks) {
+			tasks.notifyAll();
+		}
 		return this;
 	}
 
@@ -100,8 +109,27 @@ public class TaskQuery extends Thread {
 					onError(e);
 					break;
 				}
+			else if (closed.get())
+				break;
+			else
+				synchronized (tasks) {
+					try {
+						tasks.wait();
+					} catch (InterruptedException e) {
+						break;
+					}
+				}
 		}
 		oninterrupted();
 	}
-	
+
+	private AtomicBoolean closed = new AtomicBoolean(false);
+
+	public TaskQuery close() {
+		synchronized (tasks) {
+			closed.set(true);
+			tasks.notifyAll();
+		}
+		return this;
+	}
 }
