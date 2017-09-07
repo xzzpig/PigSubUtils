@@ -76,8 +76,8 @@ public class DBField {
 
 	@Override
 	public String toString() {
-		StringBuffer sb = new StringBuffer(name);
-		sb.append(' ').append(type.nameInDB);
+        StringBuilder sb = new StringBuilder(name);
+        sb.append(' ').append(type.nameInDB);
 		if (primaryKey)
 			sb.append(' ').append("PRIMARY KEY");
 		if (unique)

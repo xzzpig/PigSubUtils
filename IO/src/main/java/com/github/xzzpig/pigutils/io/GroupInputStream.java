@@ -45,22 +45,19 @@ public class GroupInputStream {
 	}
 
 	public GroupInputStream start() {
-		thread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				int i = 0;
-				while (i != -1) {
-					try {
-						i = in.read();
-						for (SubInputStream sin : subInputStreams)
-							sin.bytes.add(i);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		});
-		thread.start();
+        thread = new Thread(() -> {
+            int i = 0;
+            while (i != -1) {
+                try {
+                    i = in.read();
+                    for (SubInputStream sin : subInputStreams)
+                        sin.bytes.add(i);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
 		return this;
 	}
 

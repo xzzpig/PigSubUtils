@@ -19,21 +19,21 @@ public @interface EventHandler {
 	 * 
 	 * @see EventRunner#ignoreCanceled()
 	 */
-	public boolean ignoreCanceled() default false;
+    boolean ignoreCanceled() default false;
 
 	/**
 	 * 对应 {@link EventRunner#getRunLevel()}
 	 * 
 	 * @see EventRunner#getRunLevel()
 	 */
-	public EventRunLevel mainLevel() default EventRunLevel.Normal;
+    EventRunLevel mainLevel() default EventRunLevel.Normal;
 
 	/**
 	 * 对应 {@link EventRunner#getMinorRunLevel()}
 	 * 
 	 * @see EventRunner#getMinorRunLevel()
 	 */
-	public int minorLevel() default 0;
+    int minorLevel() default 0;
 
 	/**
 	 * 对应 {@link EventRunner#getEventTunnel()}
@@ -41,5 +41,5 @@ public @interface EventHandler {
 	 * @return 将会被转换成对应的{@link EventTunnel}
 	 * @see EventRunner#getEventTunnel()
 	 */
-	public String tunnel() default "default";
+    String tunnel() default "default";
 }

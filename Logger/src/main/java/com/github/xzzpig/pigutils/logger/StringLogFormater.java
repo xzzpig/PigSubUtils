@@ -20,8 +20,8 @@ public class StringLogFormater extends LogFormater {
 
 	@Documented
 	@Retention(RUNTIME)
-	public static @interface StringFormatTemplate {
-		/**
+    public @interface StringFormatTemplate {
+        /**
 		 * 允许参数:<br/>
 		 * <ul>
 		 * <li>%log%:log内容</li>

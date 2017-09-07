@@ -68,9 +68,9 @@ public class CommandServer {
 					res.put("l", "Error");
 					res.put("m", "命令不可未空");
 				}
-				ServerCommand[] ss = Command.getCommands().filter(c -> c instanceof ServerCommand)
-						.map(c -> (ServerCommand) c).filter(c -> c.getCmd().equalsIgnoreCase(cmd))
-						.filter(c -> c.getType().toString().equalsIgnoreCase("Server")).toArray(ServerCommand[]::new);
+                ServerCommand[] ss = Command.getCommands().filter(ServerCommand.class::isInstance)
+                        .map(ServerCommand.class::cast).filter(c -> c.getCmd().equalsIgnoreCase(cmd))
+                        .filter(c -> c.getType().toString().equalsIgnoreCase("Server")).toArray(ServerCommand[]::new);
 				if (ss.length == 0) {
 					res.put("command", "print");
 					res.put("l", "Error");
@@ -129,8 +129,8 @@ public class CommandServer {
 			res.put("l", "Error");
 			res.put("m", "命令不可未空");
 		}
-		ServerCommand[] ss = Command.getCommands().filter(c -> c instanceof ServerCommand).map(c -> (ServerCommand) c)
-				.filter(c -> c.getCmd().equalsIgnoreCase(cmd))
+        ServerCommand[] ss = Command.getCommands().filter(ServerCommand.class::isInstance).map(ServerCommand.class::cast)
+                .filter(c -> c.getCmd().equalsIgnoreCase(cmd))
 				.filter(c -> c.getType().toString().equalsIgnoreCase("Client")).toArray(ServerCommand[]::new);
 		if (ss.length == 0) {
 			res.put("command", "print");

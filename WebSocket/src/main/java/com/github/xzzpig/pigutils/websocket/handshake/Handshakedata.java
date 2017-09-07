@@ -3,11 +3,11 @@ package com.github.xzzpig.pigutils.websocket.handshake;
 import java.util.Iterator;
 
 public interface Handshakedata {
-	public byte[] getContent();
+    byte[] getContent();
 
-	public String getFieldValue(String name);
+    String getFieldValue(String name);
 
-	public boolean hasFieldValue(String name);
+    boolean hasFieldValue(String name);
 
-	public Iterator<String> iterateHttpFields();
+    Iterator<String> iterateHttpFields();
 }

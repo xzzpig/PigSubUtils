@@ -10,5 +10,5 @@ public interface CommandRunner {
 	 * @param args
 	 * @return 异常(null未无异常)
 	 */
-	public JSONObject run(String cmd, JSONObject args);
+    JSONObject run(String cmd, JSONObject args);
 }

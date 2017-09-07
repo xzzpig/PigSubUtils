@@ -61,8 +61,8 @@ public class JavaPluginLoader extends URLPluginLoader {
 
 	private Map<String, String> json2Map(JSONObject json) {
 		Map<String, String> map = new HashMap<>();
-		json.keySet().stream().forEach(key -> map.put(key, json.optString(key)));
-		return map;
+        json.keySet().forEach(key -> map.put(key, json.optString(key)));
+        return map;
 	}
 
 	@Override
@@ -70,10 +70,6 @@ public class JavaPluginLoader extends URLPluginLoader {
 		if (!(obj instanceof File))
 			return false;
 		File file = (File) obj;
-		if (!file.isFile())
-			return false;
-		if (!file.getAbsolutePath().endsWith(".jar"))
-			return false;
-		return true;
-	}
+        return file.isFile() && file.getAbsolutePath().endsWith(".jar");
+    }
 }

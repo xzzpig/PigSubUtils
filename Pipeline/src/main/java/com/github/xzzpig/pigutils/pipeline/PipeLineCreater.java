@@ -9,5 +9,5 @@ public interface PipeLineCreater<T> {
 	/**
 	 * @return 每个待处理对象
 	 */
-	public T create();
+    T create();
 }

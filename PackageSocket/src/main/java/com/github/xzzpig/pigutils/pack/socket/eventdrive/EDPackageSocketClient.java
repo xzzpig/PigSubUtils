@@ -52,9 +52,9 @@ public class EDPackageSocketClient extends PackageSocketClient implements EventA
 				else
 					while (!this.isInterrupted())
 						;
-			};
-		};
-		thread.start();
+            }
+        };
+        thread.start();
 		this.regRunner((PackageSocketOpenEvent event) -> thread.interrupt());
 		try {
 			thread.join();

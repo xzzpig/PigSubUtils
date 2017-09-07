@@ -8,8 +8,8 @@ import java.util.function.Consumer;
 public class TransformManager {
 
 	@FunctionalInterface
-	public static interface SimpleTransformer<F, R> extends Transformer<F, R> {
-		R transform(F f);
+    public interface SimpleTransformer<F, R> extends Transformer<F, R> {
+        R transform(F f);
 
 		default R transform(F f, Map<Object, Object> extras) {
 			return this.transform(f);
@@ -18,8 +18,8 @@ public class TransformManager {
 	}
 
 	@FunctionalInterface
-	public static interface Transformer<F, R> {
-		default boolean accept(Object o) {
+    public interface Transformer<F, R> {
+        default boolean accept(Object o) {
 			try {
 				@SuppressWarnings({ "unchecked", "unused" })
 				F f = (F) o;
@@ -31,10 +31,10 @@ public class TransformManager {
 
 		default String mark() {
 			return null;
-		};
+        }
 
 		default void onError(Exception error) {
-		};
+        }
 
 		default R transform(F f) {
 			return transform(f, (Map<Object, Object>) null);

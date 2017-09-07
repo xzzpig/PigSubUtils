@@ -189,13 +189,14 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		int port = uri.getPort();
 		if (port == -1) {
 			String scheme = uri.getScheme();
-			if (scheme.equals("wss")) {
-				return WebSocket.DEFAULT_WSS_PORT;
-			} else if (scheme.equals("ws")) {
-				return WebSocket.DEFAULT_PORT;
-			} else {
-				throw new RuntimeException("unkonow scheme" + scheme);
-			}
+            switch (scheme) {
+                case "wss":
+                    return WebSocket.DEFAULT_WSS_PORT;
+                case "ws":
+                    return WebSocket.DEFAULT_PORT;
+                default:
+                    throw new RuntimeException("unkonow scheme" + scheme);
+            }
 		}
 		return port;
 	}

@@ -20,7 +20,6 @@ public abstract class LogPrinter {
 			Class<?> clazz = Class.forName(str);
 			if (LogPrinter.class.isAssignableFrom(clazz)) {
 				return (LogPrinter) clazz.newInstance();
-			} else {
 			}
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
 		}

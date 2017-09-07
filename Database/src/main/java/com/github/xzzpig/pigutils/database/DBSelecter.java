@@ -34,10 +34,9 @@ public class DBSelecter {
 
 	public ResultSet select() throws SQLException {
 		Statement statement = mainTable.getDatabase().getConnection().createStatement();
-		ResultSet resultSet = statement.executeQuery(this.toString());
-//		statement.close();
-		return resultSet;
-	}
+        //		statement.close();
+        return statement.executeQuery(this.toString());
+    }
 
 	public DBSelecter setColums(@Nullable String... colums) {
 		if (colums == null)

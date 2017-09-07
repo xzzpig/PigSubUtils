@@ -11,8 +11,8 @@ public class MD5Crypter extends Crypter {
 
 	@Override
 	protected Cryptable crypt(Object... objs) {
-		StringBuffer sb = new StringBuffer();
-		for (Object obj : objs)
+        StringBuilder sb = new StringBuilder();
+        for (Object obj : objs)
 			sb.append(obj);
 		return new MD5Crypt(sb.toString());
 	}

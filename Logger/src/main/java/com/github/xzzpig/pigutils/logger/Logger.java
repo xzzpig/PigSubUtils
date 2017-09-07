@@ -18,95 +18,6 @@ import com.github.xzzpig.pigutils.reflect.MethodUtils;
 
 public class Logger {
 
-	private static final class LogInstance {
-		private LogFormater logFormater;
-		private LogLevel logLevel;
-		private List<LogPrinter> logPrinters;
-		private JSONObject config;
-		private AnnotatedElement element;
-
-		public LogInstance log(LogLevel level, Object... objs) {
-			if (level.getLevel() < logLevel.getLevel())
-				return this;
-			String log = logFormater.format(element, level, config, objs);
-			logPrinters.forEach(p -> p.print(log));
-			return this;
-		}
-
-		private LogInstance init(LogConfig config, AnnotatedElement element) {
-			if (!config.level().equalsIgnoreCase("extened")) {
-				logLevel = LogLevel.getLevel(config.level());
-			}
-			if (!config.formater().equalsIgnoreCase("extened")) {
-				logFormater = LogFormater.getFormater(config.formater());
-			}
-			if (logFormater.accept(element))
-				this.element = element;
-			if (config.printer().length != 0) {
-				logPrinters = null;
-				for (String sPrinter : config.printer()) {
-					addLogPrinter(LogPrinter.getPrinter(sPrinter));
-				}
-			}
-			return this;
-		}
-
-		private LogInstance init(JSONObject config) {
-			this.config = config;
-			if (!config.optString("level", "extened").equalsIgnoreCase("extened")) {
-				logLevel = LogLevel.getLevel(config.optString("level", "INFO"));
-			}
-			if (!config.optString("formater", "extened").equalsIgnoreCase("extened")) {
-				logFormater = LogFormater.getFormater(config.optString("formater", "String"));
-			}
-			if (logFormater.accept(config))
-				this.config = config;
-			if (config.has("printer")) {
-				try {
-					addLogPrinter(LogPrinter.getPrinter(config.getString("printer")));
-				} catch (Exception e) {
-					for (Object sPrinter : config.getJSONArray("printer").toList()) {
-						addLogPrinter(LogPrinter.getPrinter(sPrinter + ""));
-					}
-				}
-			}
-			return this;
-		}
-
-		private void addLogPrinter(LogPrinter printer) {
-			if (logPrinters == null)
-				logPrinters = new ArrayList<>();
-			if (logPrinters.contains(printer))
-				return;
-			logPrinters.add(printer);
-		}
-
-		@Override
-		public LogInstance clone() {
-			LogInstance instance = new LogInstance();
-			instance.logFormater = logFormater;
-			instance.logLevel = logLevel;
-			instance.logPrinters = new ArrayList<>(logPrinters);
-			instance.config = config;
-			instance.element = element;
-			return instance;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (!(obj instanceof LogInstance))
-				return false;
-			LogInstance instance = (LogInstance) obj;
-			if (!instance.logFormater.equals(logFormater))
-				return false;
-			if (instance.logPrinters.size() != logPrinters.size())
-				return false;
-			if (!instance.logPrinters.containsAll(logPrinters))
-				return false;
-			return true;
-		}
-	}
-
 	private static JSONObject projectLoggerConfig;
 	private static Logger projectLogger;
 	private static LogInstance defaultLogInstance;
@@ -131,6 +42,11 @@ public class Logger {
 			projectLogger.addLogInstance(defaultLogInstance.clone());
 	}
 
+    private List<LogInstance> logLogInstances;
+
+    private Logger() {
+    }
+
 	/**
 	 * 获取Logger对象<br/>
 	 * 按如下顺序添加 {@link LogInstance}对象:<br/>
@@ -139,15 +55,15 @@ public class Logger {
 	 * <li>foreach( {@link Exception#getStackTrace()})
 	 * <ol>
 	 * <li>{@link StackTraceElement}->
-	 * {@link Class#getResource(logconfig.json)}-> {@link JSONObject}</li>
-	 * <li>{@link StackTraceElement}->class的 {@link LogConfig}注解</li>
+     * "logconfig.json"->{@link Class#getResource(String)}-> {@link JSONObject}</li>
+     * <li>{@link StackTraceElement}->class的 {@link LogConfig}注解</li>
 	 * <li>{@link StackTraceElement}->method的 {@link LogConfig}注解</li>
 	 * </ol>
 	 * </li>
 	 * <li>默认配置:
 	 * <ul>
-	 * <li>{@link LogConfig#level()}= {@link LogConfig#INFO}</li>
-	 * <li>{@link LogConfig#formater()}= {@link StringLogFormater}</li>
+     * <li>{@link LogConfig#level()}= {@link LogLevel#INFO}</li>
+     * <li>{@link LogConfig#formater()}= {@link StringLogFormater}</li>
 	 * <li>{@link LogConfig#printer()}= {@link ConsoleLogPrinter}</li>
 	 * </ul>
 	 * </li>
@@ -263,28 +179,104 @@ public class Logger {
 		return logger;
 	}
 
-	private void init(LogConfig logConfig, AnnotatedElement m) {
-		addLogInstance(logLogInstances.get(0).clone().init(logConfig, m));
-	}
-
-	private List<LogInstance> logLogInstances;
-
-	private Logger() {
-	}
-
 	public Logger addLogInstance(LogInstance instance) {
 		if (logLogInstances == null)
 			logLogInstances = new ArrayList<>();
 		if (instance == null)
 			return this;
-		Iterator<LogInstance> ir = logLogInstances.iterator();
-		while (ir.hasNext()) {
-			if (ir.next().equals(instance))
-				ir.remove();
-		}
-		logLogInstances.add(0, instance);
+        logLogInstances.removeIf(logInstance -> logInstance.equals(instance));
+        logLogInstances.add(0, instance);
 		return this;
 	}
+
+    private void init(LogConfig logConfig, AnnotatedElement m) {
+        addLogInstance(logLogInstances.get(0).clone().init(logConfig, m));
+    }
+
+    private static final class LogInstance {
+        private LogFormater logFormater;
+        private LogLevel logLevel;
+        private List<LogPrinter> logPrinters;
+        private JSONObject config;
+        private AnnotatedElement element;
+
+        public LogInstance log(LogLevel level, Object... objs) {
+            if (level.getLevel() < logLevel.getLevel())
+                return this;
+            String log = logFormater.format(element, level, config, objs);
+            logPrinters.forEach(p -> p.print(log));
+            return this;
+        }
+
+        private LogInstance init(LogConfig config, AnnotatedElement element) {
+            if (!config.level().equalsIgnoreCase("extened")) {
+                logLevel = LogLevel.getLevel(config.level());
+            }
+            if (!config.formater().equalsIgnoreCase("extened")) {
+                logFormater = LogFormater.getFormater(config.formater());
+            }
+            if (logFormater.accept(element))
+                this.element = element;
+            if (config.printer().length != 0) {
+                logPrinters = null;
+                for (String sPrinter : config.printer()) {
+                    addLogPrinter(LogPrinter.getPrinter(sPrinter));
+                }
+            }
+            return this;
+        }
+
+        private LogInstance init(JSONObject config) {
+            this.config = config;
+            if (!config.optString("level", "extened").equalsIgnoreCase("extened")) {
+                logLevel = LogLevel.getLevel(config.optString("level", "INFO"));
+            }
+            if (!config.optString("formater", "extened").equalsIgnoreCase("extened")) {
+                logFormater = LogFormater.getFormater(config.optString("formater", "String"));
+            }
+            if (logFormater.accept(config))
+                this.config = config;
+            if (config.has("printer")) {
+                try {
+                    addLogPrinter(LogPrinter.getPrinter(config.getString("printer")));
+                } catch (Exception e) {
+                    for (Object sPrinter : config.getJSONArray("printer").toList()) {
+                        addLogPrinter(LogPrinter.getPrinter(sPrinter + ""));
+                    }
+                }
+            }
+            return this;
+        }
+
+        private void addLogPrinter(LogPrinter printer) {
+            if (logPrinters == null)
+                logPrinters = new ArrayList<>();
+            if (logPrinters.contains(printer))
+                return;
+            logPrinters.add(printer);
+        }
+
+        @Override
+        public LogInstance clone() {
+            LogInstance instance = new LogInstance();
+            instance.logFormater = logFormater;
+            instance.logLevel = logLevel;
+            instance.logPrinters = new ArrayList<>(logPrinters);
+            instance.config = config;
+            instance.element = element;
+            return instance;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof LogInstance))
+                return false;
+            LogInstance instance = (LogInstance) obj;
+            if (!instance.logFormater.equals(logFormater))
+                return false;
+            return instance.logPrinters.size() == logPrinters.size() && instance.logPrinters.containsAll(logPrinters);
+        }
+    }
 
 	private Logger init(JSONObject json) {
 		if (json == null)

@@ -58,9 +58,9 @@ public class BaseTaskStreamBuilder implements TaskStreamBuilder {
 			throw new RuntimeException(new NoSuchMethodException("IfTaskStreamBuilder#else_ can not be invoked"));
 		if (this.builderRef.isSelf()) {
 			final BaseTaskStreamBuilder builder = new BaseTaskStreamBuilder();
-			steps.add((TaskObject task) -> {
-				if (!task.get(this.hashCode() + "if", Boolean.class, true))
-					builder.build().input(task);
+            steps.add((TaskObject task) -> {
+                if (!task.get(this.hashCode() + "if", Boolean.class, true))
+                    builder.build().input(task);
 			});
 			builderRef = builder;
 		} else {
@@ -235,8 +235,8 @@ public class BaseTaskStreamBuilder implements TaskStreamBuilder {
 		if (this.builderRef.isSelf()) {
 			final BaseTaskStreamBuilder builder = new BaseTaskStreamBuilder();
 			steps.add(task -> {
-				if (task.get(this.hashCode() + "if", Boolean.class, true) == false)
-					if (predicate.test(task)) {
+                if (!task.get(this.hashCode() + "if", Boolean.class, true))
+                    if (predicate.test(task)) {
 						builder.build().input(task);
 						task.set(this.hashCode() + "if", true);
 					} else

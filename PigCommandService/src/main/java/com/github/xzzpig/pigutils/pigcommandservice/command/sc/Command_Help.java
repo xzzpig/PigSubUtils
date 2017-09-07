@@ -34,11 +34,9 @@ public class Command_Help extends ServerCommand {
 
 	public JSONObject run(String cmd, JSONObject args) {
 		StringBuffer sb = new StringBuffer("命令列表:\n");
-		Command.getCommands().filter(c -> c instanceof ServerCommand)
-				.filter(c -> c.getType().toString().equalsIgnoreCase("Client")).forEach(c -> {
-					sb.append('\t').append(c.toString()).append('\n');
-				});
-		Logger.getAnonymousLogger().info(sb.toString());
+        Command.getCommands().filter(ServerCommand.class::isInstance)
+                .filter(c -> c.getType().toString().equalsIgnoreCase("Client")).forEach(c -> sb.append('\t').append(c.toString()).append('\n'));
+        Logger.getAnonymousLogger().info(sb.toString());
 		return null;
 	}
 

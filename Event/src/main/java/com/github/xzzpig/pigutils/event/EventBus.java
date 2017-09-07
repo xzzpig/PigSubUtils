@@ -43,8 +43,8 @@ public class EventBus {
 		e.runners = new ArrayList<>(runners);
 		e.eventbus = this;
 		run: for (EventRunner<?> r : e.runners) {
-			if (e.isCanceled() && r.ignoreCanceled() == false)
-				continue;
+            if (e.isCanceled() && !r.ignoreCanceled())
+                continue;
 			if (tunnel != null && !r.getEventTunnel().equals(tunnel)) {
 				continue;
 			}
@@ -167,14 +167,8 @@ public class EventBus {
 			} else if (r1.getRunLevel().ordinal() < r2.getRunLevel().ordinal()) {
 				return -1;
 			} else {
-				if (r1.getMinorRunLevel() > r2.getMinorRunLevel()) {
-					return 1;
-				} else if (r1.getMinorRunLevel() < r2.getMinorRunLevel()) {
-					return -1;
-				} else {
-					return 0;
-				}
-			}
+                return Integer.compare(r1.getMinorRunLevel(), r2.getMinorRunLevel());
+            }
 		});
 		return this;
 	}
@@ -187,12 +181,8 @@ public class EventBus {
 	 */
 	public EventBus unregListener(Class<Listener> c) {
 		unregRunner(r -> {
-			if (r.getInfo() == null)
-				return false;
-			if (r.getInfo().get("class", String.class, "").equalsIgnoreCase(c.getName()))
-				return true;
-			return false;
-		});
+            return r.getInfo() != null && r.getInfo().get("class", String.class, "").equalsIgnoreCase(c.getName());
+        });
 		return this;
 	}
 
@@ -204,12 +194,8 @@ public class EventBus {
 	 */
 	public EventBus unregListener(Listener listener) {
 		unregRunner(r -> {
-			if (r.getInfo() == null)
-				return false;
-			if (r.getInfo().get("listener", String.class, "").equalsIgnoreCase(listener.toString()))
-				return true;
-			return false;
-		});
+            return r.getInfo() != null && r.getInfo().get("listener", String.class, "").equalsIgnoreCase(listener.toString());
+        });
 		return this;
 	}
 

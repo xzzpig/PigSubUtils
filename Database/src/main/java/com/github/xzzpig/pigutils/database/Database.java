@@ -60,8 +60,8 @@ public class Database {
 
 	public void execSql(String sql, List<Object> perpareLists) throws SQLException {
 		if (perpareLists == null)
-			perpareLists = new ArrayList<Object>();
-		SQLException[] exceptions = new SQLException[1];
+            perpareLists = new ArrayList<>();
+        SQLException[] exceptions = new SQLException[1];
 		if (perpareLists.size() == 0)
 			this.withStatment(statment -> {
 				try {

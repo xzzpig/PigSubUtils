@@ -39,8 +39,8 @@ public class SocketChannelIOHelper {
 				ws.closeConnection();
 			}
 		}
-		return c != null ? !((WrappedByteChannel) sockchannel).isNeedWrite() : true;
-	}
+        return c == null || !((WrappedByteChannel) sockchannel).isNeedWrite();
+    }
 
 	public static boolean read(final ByteBuffer buf, WebSocketImpl ws, ByteChannel channel) throws IOException {
 		buf.clear();

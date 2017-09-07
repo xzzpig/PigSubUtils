@@ -45,8 +45,8 @@ public class Draft_75 extends Draft {
 	/** Is only used to detect protocol violations */
 	protected boolean readingState = false;
 
-	protected List<Framedata> readyframes = new LinkedList<Framedata>();
-	protected ByteBuffer currentFrame;
+    protected List<Framedata> readyframes = new LinkedList<>();
+    protected ByteBuffer currentFrame;
 
 	private final Random reuseableRandom = new Random();
 
@@ -212,7 +212,7 @@ public class Draft_75 extends Draft {
 		 */
 
 		List<Framedata> frames = readyframes;
-		readyframes = new LinkedList<Framedata>();
-		return frames;
+        readyframes = new LinkedList<>();
+        return frames;
 	}
 }

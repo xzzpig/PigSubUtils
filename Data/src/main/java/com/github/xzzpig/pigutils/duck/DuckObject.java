@@ -35,10 +35,8 @@ public final class DuckObject {
 	}
 
 	public static boolean isAnnounceMarched(AnnotatedElement element, Object obj) {
-		if (obj instanceof DuckObject)
-			return ((DuckObject) obj).isAnnounceMarched(element);
-		return true;
-	}
+        return !(obj instanceof DuckObject) || ((DuckObject) obj).isAnnounceMarched(element);
+    }
 
 	@BaseOnClass(DataUtils.class)
 	public static boolean isMethodAnnounceMarched(Method method, Object... args) {
@@ -247,10 +245,8 @@ public final class DuckObject {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof DuckObject))
-			return false;
-		return ((DuckObject) obj).object.equals(object);
-	}
+        return obj instanceof DuckObject && ((DuckObject) obj).object.equals(object);
+    }
 
 	@Override
 	public String toString() {
@@ -275,17 +271,14 @@ public final class DuckObject {
 	public <T> T cast(@NotNull Class<T> mainInterface, @NotNull Class<?>... otherInterface) {
 		Class<?>[] clazzs = Arrays.copyOf(otherInterface, otherInterface.length + 1);
 		clazzs[otherInterface.length] = mainInterface;
-		Object obj = Proxy.newProxyInstance(getClass().getClassLoader(), clazzs, new InvocationHandler() {
-			@Override
-			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-				DuckObject duckObj = DuckObject.this.invoke(method.getName(), args);
-				if (duckObj == null)
-					return null;
-				else
-					return duckObj.object;
-			}
-		});
-		return (T) obj;
+        Object obj = Proxy.newProxyInstance(getClass().getClassLoader(), clazzs, (proxy, method, args) -> {
+            DuckObject duckObj = DuckObject.this.invoke(method.getName(), args);
+            if (duckObj == null)
+                return null;
+            else
+                return duckObj.object;
+        });
+        return (T) obj;
 	}
 
 }

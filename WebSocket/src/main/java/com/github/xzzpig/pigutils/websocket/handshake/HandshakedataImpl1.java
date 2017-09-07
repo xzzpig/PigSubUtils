@@ -9,8 +9,8 @@ public class HandshakedataImpl1 implements HandshakeBuilder {
 	private TreeMap<String, String> map;
 
 	public HandshakedataImpl1() {
-		map = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
-	}
+        map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    }
 
 	/*
 	 * public HandshakedataImpl1( Handshakedata h ) { httpstatusmessage =

@@ -44,13 +44,12 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 			throw new InvalidHandshakeException("socket not bound");
 		}
 
-		StringBuffer sb = new StringBuffer(90);
-		sb.append("<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"");
-		sb.append(adr.getPort());
-		sb.append("\" /></cross-domain-policy>\0");
+        String sb = "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"" +
+                adr.getPort() +
+                "\" /></cross-domain-policy>\0";
 
-		return sb.toString();
-	}
+        return sb;
+    }
 
 	@Override
 	public void onWebsocketHandshakeReceivedAsClient(WebSocket conn, ClientHandshake request, ServerHandshake response)

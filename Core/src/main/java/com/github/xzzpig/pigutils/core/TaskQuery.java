@@ -8,22 +8,19 @@ import com.github.xzzpig.pigutils.annoiation.NotNull;
 
 public class TaskQuery extends Thread {
 
-	public static interface Task {
-		/**
-		 * @return 任务是否执行成功
-		 */
-		boolean run() throws Exception;
-	}
-
 	public static Task cast(@NotNull Runnable runnable) {
-		return new Task() {
-			@Override
-			public boolean run() throws Exception {
-				runnable.run();
-				return true;
-			}
-		};
-	}
+        return () -> {
+            runnable.run();
+            return true;
+        };
+    }
+
+    public interface Task {
+        /**
+         * @return 任务是否执行成功
+         */
+        boolean run() throws Exception;
+    }
 
 	private AtomicBoolean closed = new AtomicBoolean(false);
 

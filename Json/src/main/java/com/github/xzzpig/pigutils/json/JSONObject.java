@@ -274,11 +274,12 @@ public class JSONObject implements IData {
 		return names;
 	}
 
-	static final void indent(Writer writer, int indent) throws IOException {
-		for (int i = 0; i < indent; i += 1) {
-			writer.write(' ');
-		}
-	}
+    /**
+     * Construct an empty JSONObject.
+     */
+    public JSONObject() {
+        this.map = new HashMap<>();
+    }
 
 	/**
 	 * Produce a string from a Number.
@@ -462,64 +463,24 @@ public class JSONObject implements IData {
 		}
 	}
 
-	/**
-	 * Make a JSON text of an Object value. If the object has an
-	 * value.toJSONString() method, then that method will be used to produce the
-	 * JSON text. The method is required to produce a strictly conforming text.
-	 * If the object does not contain a toJSONString method (which is the most
-	 * common case), then a text will be produced by other means. If the value
-	 * is an array or Collection, then a JSONArray will be made from it and its
-	 * toJSONString method will be called. If the value is a MAP, then a
-	 * JSONObject will be made from it and its toJSONString method will be
-	 * called. Otherwise, the value's toString method will be called, and the
-	 * result will be quoted.
-	 *
-	 * <p>
-	 * Warning: This method assumes that the data structure is acyclical.
-	 *
-	 * @param value
-	 *            The value to be serialized.
-	 * @return a printable, displayable, transmittable representation of the
-	 *         object, beginning with <code>{</code>&nbsp;<small>(left
-	 *         brace)</small> and ending with <code>}</code>&nbsp;<small>(right
-	 *         brace)</small>.
-	 * @throws JSONException
-	 *             If the value is or contains an invalid number.
-	 */
-	public static String valueToString(Object value) throws JSONException {
-		if (value == null || value.equals(null)) {
-			return "null";
+    /**
+     * Construct a JSONObject from a subset of another JSONObject. An array of
+     * strings is used to identify the keys that should be copied. Missing keys
+     * are ignored.
+     *
+     * @param jo
+     *            A JSONObject.
+     * @param names
+     *            An array of strings.
+     */
+    public JSONObject(JSONObject jo, String[] names) {
+        this();
+        for (String name : names) {
+            try {
+                this.putOnce(name, jo.opt(name));
+            } catch (Exception ignore) {
+            }
 		}
-		if (value instanceof JSONString) {
-			Object object;
-			try {
-				object = ((JSONString) value).toJSONString();
-			} catch (Exception e) {
-				throw new JSONException(e);
-			}
-			if (object instanceof String) {
-				return (String) object;
-			}
-			throw new JSONException("Bad value from toJSONString: " + object);
-		}
-		if (value instanceof Number) {
-			return numberToString((Number) value);
-		}
-		if (value instanceof Boolean || value instanceof JSONObject || value instanceof JSONArray) {
-			return value.toString();
-		}
-		if (value instanceof Map) {
-			Map<?, ?> map = (Map<?, ?>) value;
-			return new JSONObject(map).toString();
-		}
-		if (value instanceof Collection) {
-			Collection<?> coll = (Collection<?>) value;
-			return new JSONArray(coll).toString();
-		}
-		if (value.getClass().isArray()) {
-			return new JSONArray(value).toString();
-		}
-		return quote(value.toString());
 	}
 
 	/**
@@ -567,41 +528,25 @@ public class JSONObject implements IData {
 			return new JSONObject(object);
 		} catch (Exception exception) {
 			return null;
-		}
-	}
+        }
+    }
 
-	static final Writer writeValue(Writer writer, Object value, int indentFactor, int indent)
-			throws JSONException, IOException {
-		if (value == null || value.equals(null)) {
-			writer.write("null");
-		} else if (value instanceof JSONObject) {
-			((JSONObject) value).write(writer, indentFactor, indent);
-		} else if (value instanceof JSONArray) {
-			((JSONArray) value).write(writer, indentFactor, indent);
-		} else if (value instanceof Map) {
-			Map<?, ?> map = (Map<?, ?>) value;
-			new JSONObject(map).write(writer, indentFactor, indent);
-		} else if (value instanceof Collection) {
-			Collection<?> coll = (Collection<?>) value;
-			new JSONArray(coll).write(writer, indentFactor, indent);
-		} else if (value.getClass().isArray()) {
-			new JSONArray(value).write(writer, indentFactor, indent);
-		} else if (value instanceof Number) {
-			writer.write(numberToString((Number) value));
-		} else if (value instanceof Boolean) {
-			writer.write(value.toString());
-		} else if (value instanceof JSONString) {
-			Object o;
-			try {
-				o = ((JSONString) value).toJSONString();
-			} catch (Exception e) {
-				throw new JSONException(e);
+    /**
+     * Construct a JSONObject from a Map.
+     *
+     * @param map A map object that can be used to initialize the contents of
+     *            the JSONObject.
+     */
+    public JSONObject(Map<?, ?> map) {
+        this.map = new HashMap<>();
+        if (map != null) {
+            for (final Entry<?, ?> e : map.entrySet()) {
+                final Object value = e.getValue();
+                if (value != null) {
+                    this.map.put(String.valueOf(e.getKey()), wrap(value));
+                }
 			}
-			writer.write(o != null ? o.toString() : quote(value.toString()));
-		} else {
-			quote(value.toString(), writer);
 		}
-		return writer;
 	}
 
 	/**
@@ -609,32 +554,36 @@ public class JSONObject implements IData {
 	 */
 	private final Map<String, Object> map;
 
-	/**
-	 * Construct an empty JSONObject.
-	 */
-	public JSONObject() {
-		this.map = new HashMap<String, Object>();
-	}
+    /**
+     * Construct a JSONObject from an Object, using reflection to find the
+     * public members. The resulting JSONObject's keys will be the strings from
+     * the names array, and the values will be the field values associated with
+     * those keys in the object. If a key is not found or not visible, then it
+     * will not be copied into the new JSONObject.
+     *
+     * @param object
+     *            An object that has fields that should be used to make a
+     *            JSONObject.
+     * @param names
+     *            An array of strings, the names of the fields to be obtained
+     *            from the object.
+     */
+    public JSONObject(Object object, String names[]) {
+        this();
+        Class<?> c = object.getClass();
+        for (String name : names) {
+            try {
+                this.putOpt(name, c.getField(name).get(object));
+            } catch (Exception ignore) {
+            }
+        }
+    }
 
-	/**
-	 * Construct a JSONObject from a subset of another JSONObject. An array of
-	 * strings is used to identify the keys that should be copied. Missing keys
-	 * are ignored.
-	 *
-	 * @param jo
-	 *            A JSONObject.
-	 * @param names
-	 *            An array of strings.
-	 */
-	public JSONObject(JSONObject jo, String[] names) {
-		this();
-		for (int i = 0; i < names.length; i += 1) {
-			try {
-				this.putOnce(names[i], jo.opt(names[i]));
-			} catch (Exception ignore) {
-			}
-		}
-	}
+    static void indent(Writer writer, int indent) throws IOException {
+        for (int i = 0; i < indent; i += 1) {
+            writer.write(' ');
+        }
+    }
 
 	/**
 	 * Construct a JSONObject from a JSONTokener.
@@ -691,24 +640,65 @@ public class JSONObject implements IData {
 		}
 	}
 
-	/**
-	 * Construct a JSONObject from a Map.
-	 *
-	 * @param map
-	 *            A map object that can be used to initialize the contents of
-	 *            the JSONObject.
-	 */
-	public JSONObject(Map<?, ?> map) {
-		this.map = new HashMap<String, Object>();
-		if (map != null) {
-			for (final Entry<?, ?> e : map.entrySet()) {
-				final Object value = e.getValue();
-				if (value != null) {
-					this.map.put(String.valueOf(e.getKey()), wrap(value));
-				}
-			}
-		}
-	}
+    /**
+     * Make a JSON text of an Object value. If the object has an
+     * value.toJSONString() method, then that method will be used to produce the
+     * JSON text. The method is required to produce a strictly conforming text.
+     * If the object does not contain a toJSONString method (which is the most
+     * common case), then a text will be produced by other means. If the value
+     * is an array or Collection, then a JSONArray will be made from it and its
+     * toJSONString method will be called. If the value is a MAP, then a
+     * JSONObject will be made from it and its toJSONString method will be
+     * called. Otherwise, the value's toString method will be called, and the
+     * result will be quoted.
+     *
+     * <p>
+     * Warning: This method assumes that the data structure is acyclical.
+     *
+     * @param value
+     *            The value to be serialized.
+     * @return a printable, displayable, transmittable representation of the
+     *         object, beginning with <code>{</code>&nbsp;<small>(left
+     *         brace)</small> and ending with <code>}</code>&nbsp;<small>(right
+     *         brace)</small>.
+     * @throws JSONException
+     *             If the value is or contains an invalid number.
+     */
+    public static String valueToString(Object value) throws JSONException {
+        if (value == null) {
+            return "null";
+        }
+        if (value instanceof JSONString) {
+            Object object;
+            try {
+                object = ((JSONString) value).toJSONString();
+            } catch (Exception e) {
+                throw new JSONException(e);
+            }
+            if (object instanceof String) {
+                return (String) object;
+            }
+            throw new JSONException("Bad value from toJSONString: " + object);
+        }
+        if (value instanceof Number) {
+            return numberToString((Number) value);
+        }
+        if (value instanceof Boolean || value instanceof JSONObject || value instanceof JSONArray) {
+            return value.toString();
+        }
+        if (value instanceof Map) {
+            Map<?, ?> map = (Map<?, ?>) value;
+            return new JSONObject(map).toString();
+        }
+        if (value instanceof Collection) {
+            Collection<?> coll = (Collection<?>) value;
+            return new JSONArray(coll).toString();
+        }
+        if (value.getClass().isArray()) {
+            return new JSONArray(value).toString();
+        }
+        return quote(value.toString());
+    }
 
 	/**
 	 * Construct a JSONObject from an Object using bean getters. It reflects on
@@ -734,33 +724,41 @@ public class JSONObject implements IData {
 	public JSONObject(Object bean) {
 		this();
 		this.populateMap(bean);
-	}
+    }
 
-	/**
-	 * Construct a JSONObject from an Object, using reflection to find the
-	 * public members. The resulting JSONObject's keys will be the strings from
-	 * the names array, and the values will be the field values associated with
-	 * those keys in the object. If a key is not found or not visible, then it
-	 * will not be copied into the new JSONObject.
-	 *
-	 * @param object
-	 *            An object that has fields that should be used to make a
-	 *            JSONObject.
-	 * @param names
-	 *            An array of strings, the names of the fields to be obtained
-	 *            from the object.
-	 */
-	public JSONObject(Object object, String names[]) {
-		this();
-		Class<?> c = object.getClass();
-		for (int i = 0; i < names.length; i += 1) {
-			String name = names[i];
-			try {
-				this.putOpt(name, c.getField(name).get(object));
-			} catch (Exception ignore) {
-			}
-		}
-	}
+    static Writer writeValue(Writer writer, Object value, int indentFactor, int indent)
+            throws JSONException, IOException {
+        if (value == null || value.equals(null)) {
+            writer.write("null");
+        } else if (value instanceof JSONObject) {
+            ((JSONObject) value).write(writer, indentFactor, indent);
+        } else if (value instanceof JSONArray) {
+            ((JSONArray) value).write(writer, indentFactor, indent);
+        } else if (value instanceof Map) {
+            Map<?, ?> map = (Map<?, ?>) value;
+            new JSONObject(map).write(writer, indentFactor, indent);
+        } else if (value instanceof Collection) {
+            Collection<?> coll = (Collection<?>) value;
+            new JSONArray(coll).write(writer, indentFactor, indent);
+        } else if (value.getClass().isArray()) {
+            new JSONArray(value).write(writer, indentFactor, indent);
+        } else if (value instanceof Number) {
+            writer.write(numberToString((Number) value));
+        } else if (value instanceof Boolean) {
+            writer.write(value.toString());
+        } else if (value instanceof JSONString) {
+            Object o;
+            try {
+                o = ((JSONString) value).toJSONString();
+            } catch (Exception e) {
+                throw new JSONException(e);
+            }
+            writer.write(o != null ? o.toString() : quote(value.toString()));
+        } else {
+            quote(value.toString(), writer);
+        }
+        return writer;
+    }
 
 	/**
 	 * Construct a JSONObject from a source JSON text string. This is the most
@@ -1497,10 +1495,10 @@ public class JSONObject implements IData {
 		boolean includeSuperClass = klass.getClassLoader() != null;
 
 		Method[] methods = includeSuperClass ? klass.getMethods() : klass.getDeclaredMethods();
-		for (int i = 0; i < methods.length; i += 1) {
-			try {
-				Method method = methods[i];
-				if (Modifier.isPublic(method.getModifiers())) {
+        for (Method method1 : methods) {
+            try {
+                Method method = method1;
+                if (Modifier.isPublic(method.getModifiers())) {
 					String name = method.getName();
 					String key = "";
 					if (name.startsWith("get")) {
@@ -1764,11 +1762,9 @@ public class JSONObject implements IData {
 			Set<String> set = this.keySet();
 			if (!set.equals(((JSONObject) other).keySet())) {
 				return false;
-			}
-			Iterator<String> iterator = set.iterator();
-			while (iterator.hasNext()) {
-				String name = iterator.next();
-				Object valueThis = this.get(name);
+            }
+            for (String name : set) {
+                Object valueThis = this.get(name);
 				Object valueOther = ((JSONObject) other).get(name);
 				if (valueThis instanceof JSONObject) {
 					if (!((JSONObject) valueThis).similar(valueOther)) {
@@ -1820,8 +1816,8 @@ public class JSONObject implements IData {
 	 * @return a java.util.Map containing the entrys of this object
 	 */
 	public Map<String, Object> toMap() {
-		Map<String, Object> results = new HashMap<String, Object>();
-		for (Entry<String, Object> entry : this.map.entrySet()) {
+        Map<String, Object> results = new HashMap<>();
+        for (Entry<String, Object> entry : this.map.entrySet()) {
 			Object value;
 			if (entry.getValue() == null || NULL.equals(entry.getValue())) {
 				value = null;

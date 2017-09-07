@@ -287,8 +287,8 @@ public class CDL {
 		if (names == null || names.length() == 0) {
 			return null;
 		}
-		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < ja.length(); i += 1) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < ja.length(); i += 1) {
 			JSONObject jo = ja.optJSONObject(i);
 			if (jo != null) {
 				sb.append(rowToString(jo.toJSONArray(names)));

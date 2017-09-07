@@ -9,7 +9,7 @@ public interface PluginLoader {
 	/**
 	 * @return {@link PluginLoader}调用的优先级,越小越高
 	 */
-	public int order();
+    int order();
 
 	@NotNull
 	Plugin loadPlugin(@NotNull PluginManager manager, @NotNull Object obj,

@@ -267,13 +267,14 @@ public class Draft_10 extends Draft {
 
 	@Override
 	public List<Framedata> translateFrame(ByteBuffer buffer) throws LimitExedeedException, InvalidDataException {
-		List<Framedata> frames = new LinkedList<Framedata>();
-		Framedata cur;
+        List<Framedata> frames = new LinkedList<>();
+        Framedata cur;
 
 		if (incompleteframe != null) {
 			// complete an incomplete frame
-			while (true) {
-				try {
+            //noinspection LoopStatementThatDoesntLoop
+            while (true) {
+                try {
 					buffer.mark();
 					int available_next_byte_count = buffer.remaining();// The
 																		// number

@@ -54,9 +54,9 @@ public class PackageWaiter {
 				else
 					while (!this.isInterrupted()) {
 					}
-			};
-		};
-		EventRunner<PackageSocketPackageEvent> runner = this::onPackage;
+            }
+        };
+        EventRunner<PackageSocketPackageEvent> runner = this::onPackage;
 		socket.regRunner(runner);
 		thread.setDaemon(true);
 		thread.start();

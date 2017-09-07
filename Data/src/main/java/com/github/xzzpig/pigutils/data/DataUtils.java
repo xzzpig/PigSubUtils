@@ -19,12 +19,30 @@ import com.github.xzzpig.pigutils.reflect.MethodUtils;
  */
 public class DataUtils {
 
-	public static interface EachConsumer<E> {
-		EachResult consume(E e);
-	}
+    /**
+     * @param step 数组元素步长
+     */
+    @BaseOnClass(YieldIterator.class)
+    public static int[] range(int start, int end, int step) {
+        YieldIterator<Integer> yieldIterator = new YieldIterator<>(yield -> {
+            int i = start;
+            while (i < end) {
+                //noinspection unchecked
+                yield.adapt(i);
+                i += step;
+            }
+        });
+        int[] is = new int[(end - start) % step == 0 ? (end - start) / step : (end - start) / step + 1];
+        int i = 0;
+        while (yieldIterator.hasNext()) {
+            is[i] = yieldIterator.next();
+            i++;
+        }
+        return is;
+    }
 
-	public static enum EachResult {
-		/**
+    public enum EachResult {
+        /**
 		 * 同for循环中的break关键词
 		 */
 		BREAK,
@@ -39,14 +57,14 @@ public class DataUtils {
 		RETURN
 	}
 
-	public static interface WithIndexEachConsumer<E> {
-		EachResult consume(E e, int index);
-	}
+	public interface EachConsumer<E> {
+        EachResult consume(E e);
+    }
 
-	/**
-	 * 将数组变为 {@link Map}
-	 * 
-	 * @param kclazz
+    /**
+     * 将数组变为 {@link Map}
+     *
+     * @param kclazz
 	 *            K
 	 * @param vclazz
 	 *            V
@@ -169,31 +187,10 @@ public class DataUtils {
 		return range(start, end, 1);
 	}
 
-	/**
-	 * @param start
-	 * @param end
-	 * @param step
-	 *            数组元素步长
-	 * @return
-	 */
-	@BaseOnClass(YieldIterator.class)
-	public static int[] range(int start, int end, int step) {
-		YieldIterator<Integer> yieldIterator = new YieldIterator<>(yield -> {
-			int i = start;
-			while (i < end) {
-				yield.adapt(i);
-				i += step;
-			}
-		});
-		int[] is = new int[(end - start) % step == 0 ? (end - start) / step : (end - start) / step + 1];
-		int i = 0;
-		while (yieldIterator.hasNext()) {
-			is[i] = yieldIterator.next();
-			i++;
-		}
-		return is;
-	}
+	public interface WithIndexEachConsumer<E> {
+        EachResult consume(E e, int index);
+    }
 
-	private DataUtils() {
-	}
+    private DataUtils() {
+    }
 }

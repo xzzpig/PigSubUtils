@@ -2,6 +2,7 @@ package com.github.xzzpig.pigutils.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,10 +16,8 @@ public class GroupOutPutStream extends OutputStream {
 	}
 
 	public GroupOutPutStream add(OutputStream... outs) {
-		for (OutputStream outputStream : outs) {
-			this.outs.add(outputStream);
-		}
-		return this;
+        Collections.addAll(this.outs, outs);
+        return this;
 	}
 
 	@Override

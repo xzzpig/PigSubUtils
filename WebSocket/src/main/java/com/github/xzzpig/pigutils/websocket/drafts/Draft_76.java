@@ -101,13 +101,12 @@ public class Draft_76 extends Draft_75 {
 		}
 	}
 
-	private boolean failed = false;
-
 	private final Random reuseableRandom = new Random();
 
 	@Override
 	public HandshakeState acceptHandshakeAsClient(ClientHandshake request, ServerHandshake response) {
-		if (failed) {
+        boolean failed = false;
+        if (failed) {
 			return HandshakeState.NOT_MATCHED;
 		}
 
@@ -228,8 +227,8 @@ public class Draft_76 extends Draft_75 {
 					throw new InvalidFrameException();
 				}
 			} else {
-				readyframes = new LinkedList<Framedata>();
-				return frames;
+                readyframes = new LinkedList<>();
+                return frames;
 			}
 		} else {
 			return frames;

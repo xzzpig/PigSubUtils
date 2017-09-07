@@ -89,10 +89,8 @@ public abstract class Command {
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer(getCmd());
-		getArgs().entrySet().stream().sorted(this::compare).forEach(e -> {
-			sb.append(' ').append('-').append(e.getKey()).append(':').append(e.getValue());
-		});
-		sb.append('|').append(getDescribe());
+        getArgs().entrySet().stream().sorted(this::compare).forEach(e -> sb.append(' ').append('-').append(e.getKey()).append(':').append(e.getValue()));
+        sb.append('|').append(getDescribe());
 		return sb.toString();
 	}
 }

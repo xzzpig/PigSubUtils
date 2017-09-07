@@ -47,14 +47,14 @@ public abstract class URLPluginLoader extends BasePluginLoader {
 		} catch (Exception e) {
 			throw new IllegalArgumentException(e);
 		}
-		if (Arrays.asList(clPluginInfo.depends).stream().filter(name -> !manager.isPluginLoaded(name)).count() != 0) {
-			result.set(PluginLoadResult.WAIT);
+        if (Arrays.stream(clPluginInfo.depends).filter(name -> !manager.isPluginLoaded(name)).count() != 0) {
+            result.set(PluginLoadResult.WAIT);
 			return new WaitFakePlugin(clPluginInfo);
 		}
 		@SuppressWarnings("resource")
 		PluginClassloader classloader = new PluginClassloader(this.getClass().getClassLoader(), url);
-		classloader.addParents(Arrays.asList(clPluginInfo.depends).stream().map(manager::getPlugin)
-				.filter(p -> p.getClass().getClassLoader() instanceof URLClassLoader)
+        classloader.addParents(Arrays.stream(clPluginInfo.depends).map(manager::getPlugin)
+                .filter(p -> p.getClass().getClassLoader() instanceof URLClassLoader)
 				.map(p -> (URLClassLoader) p.getClass().getClassLoader()).toArray(URLClassLoader[]::new));
 		try {
 			Class<? extends URLPlugin> clazz = classloader.loadClass(clPluginInfo.mainClass)

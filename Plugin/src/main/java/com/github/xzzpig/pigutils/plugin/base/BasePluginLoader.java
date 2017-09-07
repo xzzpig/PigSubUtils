@@ -74,8 +74,8 @@ public abstract class BasePluginLoader implements PluginLoader {
 	@Override
 	public void othersuccessNodify(Plugin plugin) {
 		if (waitMap.containsKey(plugin.getName())) {
-			waitMap.get(plugin.getName()).forEach(r -> r.run());
-			waitMap.remove(plugin.getName());
+            waitMap.get(plugin.getName()).forEach(Runnable::run);
+            waitMap.remove(plugin.getName());
 		}
 	}
 

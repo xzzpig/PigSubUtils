@@ -22,7 +22,6 @@ public abstract class LogFormater {
 			Class<?> clazz = Class.forName(str);
 			if (LogFormater.class.isAssignableFrom(clazz)) {
 				return (LogFormater) clazz.newInstance();
-			} else {
 			}
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
 		}
@@ -40,10 +39,8 @@ public abstract class LogFormater {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof LogFormater))
-			return false;
-		return this.getName().equals(((LogFormater) obj).getName());
-	}
+        return obj instanceof LogFormater && this.getName().equals(((LogFormater) obj).getName());
+    }
 
 	/**
 	 * @return 是否替换之后

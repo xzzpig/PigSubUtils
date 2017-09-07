@@ -13,10 +13,10 @@ public class TData implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private HashMap<String, Boolean> boos = new HashMap<String, Boolean>();
-	private HashMap<String, Integer> ints = new HashMap<String, Integer>();
-	private HashMap<String, Object> obs = new HashMap<String, Object>();
-	private HashMap<String, String> strs = new HashMap<String, String>();
+    private HashMap<String, Boolean> boos = new HashMap<>();
+    private HashMap<String, Integer> ints = new HashMap<>();
+    private HashMap<String, Object> obs = new HashMap<>();
+    private HashMap<String, String> strs = new HashMap<>();
 
 	public TData() {
 	}
@@ -54,22 +54,16 @@ public class TData implements Serializable {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof TData))
-			return false;
-		return equals((TData) obj);
-	}
+        return obj instanceof TData && equals((TData) obj);
+    }
 
 	public boolean equals(TData data) {
 		if (!data.strs.equals(this.strs))
 			return false;
 		if (!data.ints.equals(this.ints))
 			return false;
-		if (!data.boos.equals(this.boos))
-			return false;
-		if (!data.obs.equals(this.obs))
-			return false;
-		return true;
-	}
+        return data.boos.equals(this.boos) && data.obs.equals(this.obs);
+    }
 
 	public boolean getBoolan(String key) {
 		if (!this.boos.containsKey(key))
@@ -132,10 +126,8 @@ public class TData implements Serializable {
 	}
 
 	public TData toSerializable() {
-		Iterator<Entry<String, Object>> io = obs.entrySet().iterator();
-		while (io.hasNext()) {
-			Entry<String, Object> ioe = io.next();
-			if (ioe.getValue() instanceof Serializable)
+        for (Entry<String, Object> ioe : obs.entrySet()) {
+            if (ioe.getValue() instanceof Serializable)
 				continue;
 			ioe.setValue(ioe.getValue().toString());
 		}
@@ -144,31 +136,23 @@ public class TData implements Serializable {
 
 	@Override
 	public String toString() {
-		List<String> ss = new ArrayList<String>();
-		Iterator<Entry<String, String>> is = strs.entrySet().iterator();
-		while (is.hasNext()) {
-			Entry<String, String> ise = is.next();
-			ss.add(ise.getKey() + "\t" + ise.getValue());
+        List<String> ss = new ArrayList<>();
+        for (Entry<String, String> ise : strs.entrySet()) {
+            ss.add(ise.getKey() + "\t" + ise.getValue());
 		}
-		Iterator<Entry<String, Integer>> ii = ints.entrySet().iterator();
-		while (ii.hasNext()) {
-			Entry<String, Integer> iie = ii.next();
-			ss.add(iie.getKey() + "\t" + iie.getValue());
+        for (Entry<String, Integer> iie : ints.entrySet()) {
+            ss.add(iie.getKey() + "\t" + iie.getValue());
 		}
-		Iterator<Entry<String, Boolean>> ib = boos.entrySet().iterator();
-		while (ib.hasNext()) {
-			Entry<String, Boolean> ibe = ib.next();
-			ss.add(ibe.getKey() + "\t" + ibe.getValue());
+        for (Entry<String, Boolean> ibe : boos.entrySet()) {
+            ss.add(ibe.getKey() + "\t" + ibe.getValue());
 		}
-		Iterator<Entry<String, Object>> io = obs.entrySet().iterator();
-		while (io.hasNext()) {
-			Entry<String, Object> ioe = io.next();
-			ss.add(ioe.getKey() + "\t" + ioe.getValue());
+        for (Entry<String, Object> ioe : obs.entrySet()) {
+            ss.add(ioe.getKey() + "\t" + ioe.getValue());
 		}
-		StringBuffer sb = new StringBuffer();
-		for (String s : ss) {
-			sb.append(s + "\n");
-		}
+        StringBuilder sb = new StringBuilder();
+        for (String s : ss) {
+            sb.append(s).append("\n");
+        }
 		return sb.toString();
 	}
 }

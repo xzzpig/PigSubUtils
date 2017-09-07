@@ -5,8 +5,8 @@ import java.awt.Font;
 public class ZoomTextItem extends TextItem {
 
 	public enum ZoomType {
-		Fill, Height, Suit, Width;
-	}
+        Fill, Height, Suit, Width
+    }
 
 	private Rect tarRect;
 	private ZoomType type;

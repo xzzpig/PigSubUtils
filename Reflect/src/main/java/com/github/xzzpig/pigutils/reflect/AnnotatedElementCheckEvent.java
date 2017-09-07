@@ -7,11 +7,11 @@ import com.github.xzzpig.pigutils.annoiation.Nullable;
 import com.github.xzzpig.pigutils.event.Event;
 
 /**
- *	当 {@link MethodUtils#checkArgs(Object...)调用时触发}
+ *	当 {@link MethodUtils#checkArgs(Object...)}调用时触发
  */
 public class AnnotatedElementCheckEvent extends Event {
 
-	public static interface AnnotatedElementChecker {
+    public interface AnnotatedElementChecker {
 
 		/**
 		 * @param element

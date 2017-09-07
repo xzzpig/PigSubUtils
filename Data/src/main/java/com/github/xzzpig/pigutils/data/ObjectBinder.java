@@ -70,20 +70,12 @@ public class ObjectBinder {
 	}
 
 	public void unBind(Object obj) {
-		bindList.removeIf(objs -> {
-			if (objs[0].equals(obj) || objs[1].equals(obj))
-				return true;
-			return false;
-		});
-	}
+        bindList.removeIf(objs -> objs[0].equals(obj) || objs[1].equals(obj));
+    }
 
 	public void unBind(Object obj, Class<?> targetClass) {
-		bindList.removeIf(objs -> {
-			if ((objs[0].equals(obj) && targetClass.isInstance(objs[1]))
-					|| (objs[1].equals(obj) && targetClass.isInstance(objs[0])))
-				return true;
-			return false;
-		});
-	}
+        bindList.removeIf(objs -> (objs[0].equals(obj) && targetClass.isInstance(objs[1]))
+                || (objs[1].equals(obj) && targetClass.isInstance(objs[0])));
+    }
 
 }

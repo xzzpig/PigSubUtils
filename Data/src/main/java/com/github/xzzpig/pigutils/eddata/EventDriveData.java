@@ -23,11 +23,8 @@ public class EventDriveData {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof EventDriveData) {
-			return this.bindObj.equals(((EventDriveData) obj).bindObj);
-		} else
-			return false;
-	}
+        return obj instanceof EventDriveData && this.bindObj.equals(((EventDriveData) obj).bindObj);
+    }
 
 	public <T> T get(Object key, Class<T> valueClazz) {
 		EventDriveDataGetEvent<T> event = new EventDriveDataGetEvent<>(this, key, valueClazz);

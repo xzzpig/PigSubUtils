@@ -12,8 +12,8 @@ import java.lang.annotation.Retention;
 @Retention(CLASS)
 public @interface API {
 
-	enum ComplexValue {
-		/**
+    enum ComplexValue {
+        /**
 		 * O(1)
 		 */
 		O_1,

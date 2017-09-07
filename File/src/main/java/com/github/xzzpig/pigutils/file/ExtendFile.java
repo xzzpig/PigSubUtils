@@ -159,20 +159,17 @@ public class ExtendFile extends File {
 	}
 
 	public boolean writeObject(Object object) {
-		AtomicBoolean b = new AtomicBoolean(true);
-		if (!withOutputStream(out -> {
-			try {
-				ObjectOutputStream oout = new ObjectOutputStream(out);
-				oout.writeObject(object);
-			} catch (Exception e) {
-				b.set(false);
-				return;
-			}
-		}, false)) {
-			return false;
-		}
-		return b.get();
-	}
+        AtomicBoolean b = new AtomicBoolean(true);
+        return withOutputStream(out -> {
+            try {
+                ObjectOutputStream oout = new ObjectOutputStream(out);
+                oout.writeObject(object);
+            } catch (Exception e) {
+                b.set(false);
+                return;
+            }
+        }, false) && b.get();
+    }
 
 	public Object readObject() {
 		AtomicReference<Object> obj = new AtomicReference<>();

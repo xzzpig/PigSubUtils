@@ -29,20 +29,19 @@ public class CommandClient {
 		return client;
 	}
 
-	/**
+    public boolean isConnected() {
+        return client.isOpen();
+    }
+
+    /**
 	 * 打开server
-	 * 
-	 * @param port
+     *
+     * @param port
 	 *            绑定的端口
 	 * @return this
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-
-	public boolean isConnected() {
-		return client.isOpen();
-	}
-
 	public CommandClient open(String ip, int port) throws IOException, URISyntaxException {
 		client = new WebSocketClient(new URI("ws://" + ip + ":" + port)) {
 			@Override
@@ -63,9 +62,9 @@ public class CommandClient {
 					res.put("l", "Error");
 					res.put("m", "命令不可未空");
 				}
-				ClientCommand[] ss = Command.getCommands().filter(c -> c instanceof ClientCommand)
-						.map(c -> (ClientCommand) c).filter(c -> c.getCmd().equalsIgnoreCase(cmd))
-						.filter(c -> c.getType().toString().equalsIgnoreCase("Server")).toArray(ClientCommand[]::new);
+                ClientCommand[] ss = Command.getCommands().filter(ClientCommand.class::isInstance)
+                        .map(ClientCommand.class::cast).filter(c -> c.getCmd().equalsIgnoreCase(cmd))
+                        .filter(c -> c.getType().toString().equalsIgnoreCase("Server")).toArray(ClientCommand[]::new);
 				if (ss.length == 0) {
 					res.put("command", "print");
 					res.put("l", "Error");
@@ -115,8 +114,8 @@ public class CommandClient {
 			res.put("l", "Error");
 			res.put("m", "命令不可未空");
 		}
-		ClientCommand[] ss = Command.getCommands().filter(c -> c instanceof ClientCommand).map(c -> (ClientCommand) c)
-				.filter(c -> c.getCmd().equalsIgnoreCase(cmd))
+        ClientCommand[] ss = Command.getCommands().filter(ClientCommand.class::isInstance).map(ClientCommand.class::cast)
+                .filter(c -> c.getCmd().equalsIgnoreCase(cmd))
 				.filter(c -> c.getType().toString().equalsIgnoreCase("Client")).toArray(ClientCommand[]::new);
 		if (ss.length == 0) {
 			res.put("command", "print");

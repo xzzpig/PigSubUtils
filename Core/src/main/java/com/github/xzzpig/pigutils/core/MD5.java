@@ -1,5 +1,7 @@
 package com.github.xzzpig.pigutils.core;
 
+import com.github.xzzpig.pigutils.annoiation.NotNull;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -28,12 +30,11 @@ public class MD5 {
 		return strDigits[iD1] + strDigits[iD2];
 	}
 
-	// ת���ֽ�����Ϊ16�����ִ�
 	private static String byteToString(byte[] bByte) {
-		StringBuffer sBuffer = new StringBuffer();
-		for (int i = 0; i < bByte.length; i++) {
-			sBuffer.append(byteToArrayString(bByte[i]));
-		}
+        StringBuilder sBuffer = new StringBuilder();
+        for (byte aBByte : bByte) {
+            sBuffer.append(byteToArrayString(aBByte));
+        }
 		return sBuffer.toString();
 	}
 
@@ -72,8 +73,8 @@ public class MD5 {
 	public static String GetMD5Code(String strObj) {
 		String resultString = null;
 		try {
-			resultString = new String(strObj);
-			MessageDigest md = MessageDigest.getInstance("MD5");
+            resultString = strObj;
+            MessageDigest md = MessageDigest.getInstance("MD5");
 			// md.digest() �ú�������ֵΪ��Ź�ϣֵ�����byte����
 			resultString = byteToString(md.digest(strObj.getBytes()));
 		} catch (NoSuchAlgorithmException ex) {

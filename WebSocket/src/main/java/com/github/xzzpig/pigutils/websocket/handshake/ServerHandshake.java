@@ -1,7 +1,7 @@
 package com.github.xzzpig.pigutils.websocket.handshake;
 
 public interface ServerHandshake extends Handshakedata {
-	public short getHttpStatus();
+    short getHttpStatus();
 
-	public String getHttpStatusMessage();
+    String getHttpStatusMessage();
 }

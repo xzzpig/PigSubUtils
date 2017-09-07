@@ -43,8 +43,8 @@ public abstract class Draft {
 		NOT_MATCHED
 	}
 
-	public static int MAX_FAME_SIZE = 1000 * 1;
-	public static int INITIAL_FAMESIZE = 64;
+    public static int MAX_FAME_SIZE = 1000;
+    public static int INITIAL_FAMESIZE = 64;
 
 	public static final byte[] FLASH_POLICY_REQUEST = Charsetfunctions.utf8Bytes("<policy-file-request/>\0");
 
@@ -202,8 +202,8 @@ public abstract class Draft {
 			bui.append(((ClientHandshake) handshakedata).getResourceDescriptor());
 			bui.append(" HTTP/1.1");
 		} else if (handshakedata instanceof ServerHandshake) {
-			bui.append("HTTP/1.1 101 " + ((ServerHandshake) handshakedata).getHttpStatusMessage());
-		} else {
+            bui.append("HTTP/1.1 101 ").append(((ServerHandshake) handshakedata).getHttpStatusMessage());
+        } else {
 			throw new RuntimeException("unknow role");
 		}
 		bui.append("\r\n");

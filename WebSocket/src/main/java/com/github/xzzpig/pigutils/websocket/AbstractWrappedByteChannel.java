@@ -35,14 +35,14 @@ public class AbstractWrappedByteChannel implements WrappedByteChannel {
 
 	@Override
 	public boolean isNeedRead() {
-		return channel instanceof WrappedByteChannel ? ((WrappedByteChannel) channel).isNeedRead() : false;
+        return channel instanceof WrappedByteChannel && ((WrappedByteChannel) channel).isNeedRead();
 
 	}
 
 	@Override
 	public boolean isNeedWrite() {
-		return channel instanceof WrappedByteChannel ? ((WrappedByteChannel) channel).isNeedWrite() : false;
-	}
+        return channel instanceof WrappedByteChannel && ((WrappedByteChannel) channel).isNeedWrite();
+    }
 
 	@Override
 	public boolean isOpen() {

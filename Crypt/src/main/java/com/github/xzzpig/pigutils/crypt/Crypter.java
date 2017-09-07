@@ -86,8 +86,8 @@ public abstract class Crypter {
 	 * @param crypter
 	 */
 	public static void unregCrypter(Crypter crypter) {
-		TransformManager.transformers.removeIf(((Predicate<Transformer<?, ?>>) (t -> t instanceof CrypterTransformr))
-				.and((t) -> ((CrypterTransformr) t).crypter.getCryptType().equalsIgnoreCase(crypter.getCryptType())));
+        TransformManager.transformers.removeIf(((Predicate<Transformer<?, ?>>) (CrypterTransformr.class::isInstance))
+                .and((t) -> ((CrypterTransformr) t).crypter.getCryptType().equalsIgnoreCase(crypter.getCryptType())));
 	}
 
 	protected abstract Cryptable crypt(Object... objs);

@@ -3,6 +3,7 @@ package com.github.xzzpig.pigutils.event;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -16,23 +17,23 @@ public interface EventRunner<T extends Event> {
 	 * @param e
 	 * @return
 	 */
-	public default boolean canRun(Event e) {
-		Class<?> c = (Class<?>) getType();
+    default boolean canRun(Event e) {
+        Class<?> c = (Class<?>) getType();
 		return c.isAssignableFrom(e.getClass());
 	}
 
 	/**
 	 * @return 事件通道，与事件所在通道不同时将不会被执行
 	 */
-	public default EventTunnel getEventTunnel() {
-		return EventTunnel.defaultTunnel;
+    default EventTunnel getEventTunnel() {
+        return EventTunnel.defaultTunnel;
 	}
 
 	/**
 	 * @return EventRunner的可能的一些其他信息(默认为null)
 	 */
-	public default IData getInfo() {
-		return null;
+    default IData getInfo() {
+        return null;
 	}
 
 	/**
@@ -40,17 +41,17 @@ public interface EventRunner<T extends Event> {
 	 * 
 	 * @return 限制条件
 	 */
-	public default List<Predicate<Event>> getLimits() {
-		return Arrays.asList(this::canRun);
-	}
+    default List<Predicate<Event>> getLimits() {
+        return Collections.singletonList(this::canRun);
+    }
 
 	/**
 	 * 执行的次要优先级 当主要优先级相同时按此排序 执行顺序:由小到大
 	 * 
 	 * @return
 	 */
-	public default int getMinorRunLevel() {
-		return 0;
+    default int getMinorRunLevel() {
+        return 0;
 	}
 
 	/**
@@ -58,15 +59,15 @@ public interface EventRunner<T extends Event> {
 	 * 
 	 * @see EventRunLevel
 	 */
-	public default EventRunLevel getRunLevel() {
-		return EventRunLevel.Normal;
+    default EventRunLevel getRunLevel() {
+        return EventRunLevel.Normal;
 	}
 
 	/**
 	 * @return T的类型
 	 */
-	public default Type getType() {
-		for (Method m : this.getClass().getMethods()) {
+    default Type getType() {
+        for (Method m : this.getClass().getMethods()) {
 			if (m.getName().equalsIgnoreCase("run")) {
 				return m.getGenericParameterTypes()[0];
 			}
@@ -81,9 +82,9 @@ public interface EventRunner<T extends Event> {
 	 * @return 是否忽略
 	 * @see Event#isCanceled()
 	 */
-	public default boolean ignoreCanceled() {
-		return false;
+    default boolean ignoreCanceled() {
+        return false;
 	}
 
-	public void run(T event);
+    void run(T event);
 }

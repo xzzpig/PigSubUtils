@@ -51,8 +51,9 @@ public class WebSocketImpl implements WebSocket {
 													// advantage of VM
 													// optimization
 
-	public static final List<Draft> defaultdraftlist = new ArrayList<Draft>(4);
-	static {
+    public static final List<Draft> defaultdraftlist = new ArrayList<>(4);
+
+    static {
 		defaultdraftlist.add(new Draft_17());
 		defaultdraftlist.add(new Draft_10());
 		defaultdraftlist.add(new Draft_76());
@@ -138,9 +139,9 @@ public class WebSocketImpl implements WebSocket {
 																		// bound
 																		// channel
 			throw new IllegalArgumentException("parameters must not be null");
-		this.outQueue = new LinkedBlockingQueue<ByteBuffer>();
-		inQueue = new LinkedBlockingQueue<ByteBuffer>();
-		this.wsl = listener;
+        this.outQueue = new LinkedBlockingQueue<>();
+        inQueue = new LinkedBlockingQueue<>();
+        this.wsl = listener;
 		this.role = Role.CLIENT;
 		if (draft != null)
 			this.draft = draft.copyInstance();
@@ -189,8 +190,8 @@ public class WebSocketImpl implements WebSocket {
 		if (readystate != READYSTATE.CLOSING && readystate != READYSTATE.CLOSED) {
 			if (readystate == READYSTATE.OPEN) {
 				if (code == CloseFrame.ABNORMAL_CLOSE) {
-					assert (remote == false);
-					readystate = READYSTATE.CLOSING;
+                    assert (!remote);
+                    readystate = READYSTATE.CLOSING;
 					flushAndClose(code, message, false);
 					return;
 				}
@@ -302,9 +303,8 @@ public class WebSocketImpl implements WebSocket {
 
 		if (readystate != READYSTATE.NOT_YET_CONNECTED) {
 			decodeFrames(socketBuffer);
-			;
-		} else {
-			if (decodeHandshake(socketBuffer)) {
+        } else {
+            if (decodeHandshake(socketBuffer)) {
 				assert (tmpHandshakeBytes.hasRemaining() != socketBuffer.hasRemaining()
 						|| !socketBuffer.hasRemaining()); // the buffers will
 															// never have
@@ -350,13 +350,10 @@ public class WebSocketImpl implements WebSocket {
 						else
 							flushAndClose(code, reason, false);
 					}
-					continue;
 				} else if (curop == Opcode.PING) {
 					wsl.onWebsocketPing(this, f);
-					continue;
 				} else if (curop == Opcode.PONG) {
 					wsl.onWebsocketPong(this, f);
-					continue;
 				} else if (!fin || curop == Opcode.CONTINUOUS) {
 					if (curop != Opcode.CONTINUOUS) {
 						if (current_continuous_frame_opcode != null)
@@ -451,8 +448,8 @@ public class WebSocketImpl implements WebSocket {
 								d.setParseMode(role);
 								socketBuffer.reset();
 								Handshakedata tmphandshake = d.translateHandshake(socketBuffer);
-								if (tmphandshake instanceof ClientHandshake == false) {
-									flushAndClose(CloseFrame.PROTOCOL_ERROR, "wrong http function", false);
+                                if (!(tmphandshake instanceof ClientHandshake)) {
+                                    flushAndClose(CloseFrame.PROTOCOL_ERROR, "wrong http function", false);
 									return false;
 								}
 								ClientHandshake handshake = (ClientHandshake) tmphandshake;
@@ -487,8 +484,8 @@ public class WebSocketImpl implements WebSocket {
 					} else {
 						// special case for multiple step handshakes
 						Handshakedata tmphandshake = draft.translateHandshake(socketBuffer);
-						if (tmphandshake instanceof ClientHandshake == false) {
-							flushAndClose(CloseFrame.PROTOCOL_ERROR, "wrong http function", false);
+                        if (!(tmphandshake instanceof ClientHandshake)) {
+                            flushAndClose(CloseFrame.PROTOCOL_ERROR, "wrong http function", false);
 							return false;
 						}
 						ClientHandshake handshake = (ClientHandshake) tmphandshake;
@@ -505,8 +502,8 @@ public class WebSocketImpl implements WebSocket {
 				} else if (role == Role.CLIENT) {
 					draft.setParseMode(role);
 					Handshakedata tmphandshake = draft.translateHandshake(socketBuffer);
-					if (tmphandshake instanceof ServerHandshake == false) {
-						flushAndClose(CloseFrame.PROTOCOL_ERROR, "wrong http function", false);
+                    if (!(tmphandshake instanceof ServerHandshake)) {
+                        flushAndClose(CloseFrame.PROTOCOL_ERROR, "wrong http function", false);
 						return false;
 					}
 					ServerHandshake handshake = (ServerHandshake) tmphandshake;
@@ -638,8 +635,8 @@ public class WebSocketImpl implements WebSocket {
 
 	@Override
 	public boolean isConnecting() {
-		assert (flushandclosestate ? readystate == READYSTATE.CONNECTING : true);
-		return readystate == READYSTATE.CONNECTING; // ifflushandclosestate
+        assert (!flushandclosestate || readystate == READYSTATE.CONNECTING);
+        return readystate == READYSTATE.CONNECTING; // ifflushandclosestate
 	}
 
 	private HandshakeState isFlashEdgeCase(ByteBuffer request) throws IncompleteHandshakeException {
@@ -667,8 +664,8 @@ public class WebSocketImpl implements WebSocket {
 
 	@Override
 	public boolean isOpen() {
-		assert (readystate == READYSTATE.OPEN ? !flushandclosestate : true);
-		return readystate == READYSTATE.OPEN;
+        assert (readystate != READYSTATE.OPEN || !flushandclosestate);
+        return readystate == READYSTATE.OPEN;
 	}
 
 	private void open(Handshakedata d) {

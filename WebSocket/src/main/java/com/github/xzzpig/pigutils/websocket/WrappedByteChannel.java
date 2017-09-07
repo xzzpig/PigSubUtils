@@ -7,7 +7,7 @@ import java.nio.channels.ByteChannel;
 import javax.net.ssl.SSLException;
 
 public interface WrappedByteChannel extends ByteChannel {
-	public boolean isBlocking();
+    boolean isBlocking();
 
 	/**
 	 * returns whether readMore should be called to fetch data which has been
@@ -16,9 +16,9 @@ public interface WrappedByteChannel extends ByteChannel {
 	 * @see #read(ByteBuffer)
 	 * @see #readMore(ByteBuffer)
 	 **/
-	public boolean isNeedRead();
+    boolean isNeedRead();
 
-	public boolean isNeedWrite();
+    boolean isNeedWrite();
 
 	/**
 	 * This function does not read data from the underlying channel at all. It
@@ -27,7 +27,7 @@ public interface WrappedByteChannel extends ByteChannel {
 	 * decoded data did not fit into the buffer the user passed to
 	 * {@link #read(ByteBuffer)}.
 	 **/
-	public int readMore(ByteBuffer dst) throws SSLException;
+    int readMore(ByteBuffer dst) throws SSLException;
 
-	public void writeMore() throws IOException;
+    void writeMore() throws IOException;
 }

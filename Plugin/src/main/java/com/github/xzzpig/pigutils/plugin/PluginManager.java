@@ -1,9 +1,6 @@
 package com.github.xzzpig.pigutils.plugin;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
@@ -36,8 +33,8 @@ public class PluginManager implements Registable<PluginLoader> {
 	@Override
 	public PluginManager register(PluginLoader pluginLoader) {
 		pluginLoaders.add(pluginLoader);
-		pluginLoaders.sort((t1, t2) -> t1.order() - t2.order());
-		return this;
+        pluginLoaders.sort(Comparator.comparingInt(PluginLoader::order));
+        return this;
 	}
 
 	@Override
@@ -112,18 +109,16 @@ public class PluginManager implements Registable<PluginLoader> {
 
 	public @Nullable Plugin getPlugin(String name) {
 		Optional<Plugin> pl = plugins.stream().filter(p -> p.getName().equals(name)).findFirst();
-		if (pl.isPresent())
-			return pl.get();
-		return null;
-	}
+        return pl.orElse(null);
+    }
 
 	public PluginManager reloadPlugin(String name) {
 		return reloadPlugin(getPlugin(name));
 	}
 
 	public String[] listPlugins() {
-		return plugins.stream().map(p -> p.getName()).toArray(String[]::new);
-	}
+        return plugins.stream().map(Plugin::getName).toArray(String[]::new);
+    }
 
 	public Stream<Plugin> getPluginStream() {
 		return plugins.stream();

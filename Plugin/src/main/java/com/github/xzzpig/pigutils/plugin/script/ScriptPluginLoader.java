@@ -64,8 +64,8 @@ public class ScriptPluginLoader extends BasePluginLoader {
 		} catch (Exception e) {
 		}
 
-		if (Arrays.asList(depends).stream().filter(pluginName -> !manager.isPluginLoaded(pluginName)).count() != 0) {
-			result.set(PluginLoadResult.WAIT);
+        if (Arrays.stream(depends).filter(pluginName -> !manager.isPluginLoaded(pluginName)).count() != 0) {
+            result.set(PluginLoadResult.WAIT);
 			return setPluginDepends(setPluginName(new ScirptPlugin().setScriptEngine(engine), name), depends);
 		}
 		try {
@@ -86,8 +86,8 @@ public class ScriptPluginLoader extends BasePluginLoader {
 		setPluginName(plugin, name);
 		setPluginDepends(plugin, depends);
 		setPluginInfo(plugin, info);
-		classloader.addParents(Arrays.asList(depends).stream().map(manager::getPlugin)
-				.filter(p -> p.getClass().getClassLoader() instanceof URLClassLoader)
+        classloader.addParents(Arrays.stream(depends).map(manager::getPlugin)
+                .filter(p -> p.getClass().getClassLoader() instanceof URLClassLoader)
 				.map(p -> (URLClassLoader) p.getClass().getClassLoader()).toArray(URLClassLoader[]::new));
 		return plugin;
 	}
@@ -128,10 +128,10 @@ public class ScriptPluginLoader extends BasePluginLoader {
 		URL url = (URL) obj;
 		String type = getExtension(url);
 		if (knownExtensionMap.containsKey(type))
-			return knownExtensionMap.get(type) == Boolean.TRUE ? true : false;
-		ScriptEngineManager manager = new ScriptEngineManager(Classloader4ScriptManager);
-		boolean exist = manager.getEngineByExtension(type) != null ? true : false;
-		knownExtensionMap.put(type, exist);
+            return knownExtensionMap.get(type) == Boolean.TRUE;
+        ScriptEngineManager manager = new ScriptEngineManager(Classloader4ScriptManager);
+        boolean exist = manager.getEngineByExtension(type) != null;
+        knownExtensionMap.put(type, exist);
 		return exist;
 	}
 

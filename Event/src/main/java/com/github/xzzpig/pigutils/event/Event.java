@@ -7,15 +7,7 @@ import java.util.function.Predicate;
 
 /**
  * 事件Event由EventBus控制按一定顺序执行
- * 
- * @author xzzpig
  *
- */
-/**
- * @author xzzpig
- *
- */
-/**
  * @author xzzpig
  *
  */
@@ -26,15 +18,15 @@ public class Event {
 	/**
 	 * 调用默认的EventBus的{@link EventBus#callEvent(Event)}
 	 */
-	public static final void callEvent(Event event) {
-		eventInstance.callEvent(event);
+    public static void callEvent(Event event) {
+        eventInstance.callEvent(event);
 	}
 
 	/**
 	 * 调用默认的EventBus的{@link EventBus#callEvent(Event, EventTunnel)}
 	 */
-	public static final void callEvent(Event e, EventTunnel tunnel) {
-		eventInstance.callEvent(e, tunnel);
+    public static void callEvent(Event e, EventTunnel tunnel) {
+        eventInstance.callEvent(e, tunnel);
 	}
 
 	/**
@@ -43,15 +35,15 @@ public class Event {
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 */
-	public static final void registListener(Class<? extends Listener> c) throws InstantiationException, IllegalAccessException {
-		eventInstance.regListener(c);
+    public static void registListener(Class<? extends Listener> c) throws InstantiationException, IllegalAccessException {
+        eventInstance.regListener(c);
 	}
 
 	/**
 	 * 调用默认的EventBus的{@link EventBus#regListener(Listener)}
 	 */
-	public static final void registListener(Listener listener) {
-		eventInstance.regListener(listener);
+    public static void registListener(Listener listener) {
+        eventInstance.regListener(listener);
 	}
 
 	/**
@@ -60,44 +52,44 @@ public class Event {
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 */
-	public static final void regRunner(Class<? extends EventRunner<?>> c)
-			throws InstantiationException, IllegalAccessException {
+    public static void regRunner(Class<? extends EventRunner<?>> c)
+            throws InstantiationException, IllegalAccessException {
 		eventInstance.regRunner(c);
 	}
 
 	/**
 	 * 调用默认的EventBus的{@link EventBus#regRunner(EventRunner)}
 	 */
-	public static final void regRunner(EventRunner<?> runner) {
-		eventInstance.regRunner(runner);
+    public static void regRunner(EventRunner<?> runner) {
+        eventInstance.regRunner(runner);
 	}
 
 	/**
 	 * 调用默认的EventBus的{@link EventBus#unregListener(Class)}
 	 */
-	public static final void unregListener(Class<Listener> c) {
-		eventInstance.unregListener(c);
+    public static void unregListener(Class<Listener> c) {
+        eventInstance.unregListener(c);
 	}
 
 	/**
 	 * 调用默认的EventBus的{@link EventBus#unregListener(Listener)}
 	 */
-	public static final void unregListener(Listener listener) {
-		eventInstance.unregListener(listener);
+    public static void unregListener(Listener listener) {
+        eventInstance.unregListener(listener);
 	}
 
 	/**
 	 * 调用默认的EventBus的{@link EventBus#unregRunner(Class)}
 	 */
-	public static final void unregRunner(Class<EventRunner<?>> c) {
-		eventInstance.unregRunner(c);
+    public static void unregRunner(Class<EventRunner<?>> c) {
+        eventInstance.unregRunner(c);
 	}
 
 	/**
 	 * 调用默认的EventBus的{@link EventBus#unregRunner(Predicate)}
 	 */
-	public static final void unregRunner(Predicate<EventRunner<?>> p) {
-		eventInstance.unregRunner(p);
+    public static void unregRunner(Predicate<EventRunner<?>> p) {
+        eventInstance.unregRunner(p);
 	}
 
 	private boolean cancel;

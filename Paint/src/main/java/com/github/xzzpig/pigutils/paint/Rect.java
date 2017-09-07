@@ -21,10 +21,8 @@ public class Rect {
 	}
 
 	public boolean contains(int x, int y) {
-		if (x < getLeft() || x > getRight() || y < getTop() || y > getBottom())
-			return false;
-		return true;
-	}
+        return x >= getLeft() && x <= getRight() && y >= getTop() && y <= getBottom();
+    }
 
 	public int getBottom() {
 		return top + height;
