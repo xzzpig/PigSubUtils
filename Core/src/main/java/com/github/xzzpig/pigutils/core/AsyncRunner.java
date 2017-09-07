@@ -1,5 +1,6 @@
 package com.github.xzzpig.pigutils.core;
 
+import java.io.Closeable;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -15,7 +16,7 @@ import com.github.xzzpig.pigutils.annoiation.Nullable;
  * 
  * @author xzzpig
  */
-public class AsyncRunner {
+public class AsyncRunner implements Closeable {
 
 	public static abstract class AsyncRunInstance<R> implements AsyncRunnable<R> {
 		protected abstract void accept(RunResult<R> result);
@@ -100,16 +101,17 @@ public class AsyncRunner {
 	/**
 	 * 待所有执行完后停止该runner(非阻塞)
 	 */
-	public AsyncRunner close() {
+	public AsyncRunner closed() {
 		closed.set(true);
 		return this;
 	}
 
 	/**
-	 * close().join()
+	 * close()&join()
 	 */
-	public void closed() {
-		this.close().join();
+	public void close() {
+		this.close();
+		this.join();
 	}
 
 	public int getPoolSize() {
@@ -274,5 +276,4 @@ public class AsyncRunner {
 			}
 		}
 	}
-
 }

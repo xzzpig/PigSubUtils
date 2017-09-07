@@ -2,6 +2,7 @@ package com.github.xzzpig.pigutils.task.base;
 
 import java.util.LinkedList;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import com.github.xzzpig.pigutils.task.TaskObject;
@@ -57,8 +58,8 @@ public class BaseTaskStreamBuilder implements TaskStreamBuilder {
 			throw new RuntimeException(new NoSuchMethodException("IfTaskStreamBuilder#else_ can not be invoked"));
 		if (this.builderRef.isSelf()) {
 			final BaseTaskStreamBuilder builder = new BaseTaskStreamBuilder();
-			steps.add(task -> {
-				if (task.get(this.hashCode() + "if", Boolean.class, true) == false)
+			steps.add((TaskObject task) -> {
+				if (!task.get(this.hashCode() + "if", Boolean.class, true))
 					builder.build().input(task);
 			});
 			builderRef = builder;
@@ -200,6 +201,52 @@ public class BaseTaskStreamBuilder implements TaskStreamBuilder {
 	@Override
 	public TaskStreamBuilder continue_() {
 		return setState(TaskState.CONTINUE);
+	}
+
+	@Override
+	public TaskStreamBuilder filter(Predicate<TaskObject> predicate) {
+		return this.if_(predicate.negate()).skip().endIf();
+	}
+
+	@Override
+	public TaskStreamBuilder skip(Predicate<TaskObject> predicate) {
+		return this.if_(predicate).skip().endIf();
+	}
+
+	@Override
+	public TaskStreamBuilder then(TaskStream substream) {
+		return this.then(substream::input);
+	}
+
+	@Override
+	public TaskStreamBuilder map(String key, Function<Object, Object> function) {
+		return this.map(key, function, Object.class, Object.class);
+	}
+
+	@Override
+	public <T, R> TaskStreamBuilder map(String key, Function<T, R> function, Class<T> clazz1, Class<R> clazz2) {
+		return this.then(task -> task.set(key, function.apply(task.get(key, clazz1))));
+	}
+
+	@Override
+	public TaskStreamBuilder elseIf(Predicate<TaskObject> predicate) {
+		if (this.isSelf())
+			throw new RuntimeException(new NoSuchMethodException("IfTaskStreamBuilder#else_ can not be invoked"));
+		if (this.builderRef.isSelf()) {
+			final BaseTaskStreamBuilder builder = new BaseTaskStreamBuilder();
+			steps.add(task -> {
+				if (task.get(this.hashCode() + "if", Boolean.class, true) == false)
+					if (predicate.test(task)) {
+						builder.build().input(task);
+						task.set(this.hashCode() + "if", true);
+					} else
+						task.set(this.hashCode() + "if", false);
+			});
+			builderRef = builder;
+		} else {
+			this.builderRef.else_();
+		}
+		return this;
 	}
 
 }

@@ -1,6 +1,7 @@
 package com.github.xzzpig.pigutils.task;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public interface TaskStreamBuilder {
@@ -45,6 +46,8 @@ public interface TaskStreamBuilder {
 	 * @see TaskStream#input(Object)
 	 */
 	TaskStreamBuilder if_(Predicate<TaskObject> predicate);
+	
+	TaskStreamBuilder elseIf(Predicate<TaskObject> predicate);
 
 	/**
 	 * 开始For<br/>
@@ -92,4 +95,21 @@ public interface TaskStreamBuilder {
 	 * 结束while/do_while
 	 */
 	TaskStreamBuilder endWhile();
+
+	/**
+	 * {@link Predicate#test(Object)}==false的 {@link TaskObject}将被skip
+	 */
+	TaskStreamBuilder filter(Predicate<TaskObject> predicate);
+
+	/**
+	 * {@link Predicate#test(Object)}==true的 {@link TaskObject}将被skip
+	 */
+	TaskStreamBuilder skip(Predicate<TaskObject> predicate);
+
+	TaskStreamBuilder then(TaskStream substream);
+
+	TaskStreamBuilder map(String key, Function<Object, Object> function);
+
+	<T, R> TaskStreamBuilder map(String key, Function<T, R> function, Class<T> clazz1, Class<R> clazz2);
+
 }
