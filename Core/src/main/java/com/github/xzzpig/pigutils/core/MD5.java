@@ -1,7 +1,5 @@
 package com.github.xzzpig.pigutils.core;
 
-import com.github.xzzpig.pigutils.annoiation.NotNull;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

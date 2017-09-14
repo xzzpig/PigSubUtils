@@ -4,7 +4,6 @@ import com.github.xzzpig.pigutils.annoiation.NotNull;
 import com.github.xzzpig.pigutils.annoiation.Nullable;
 
 import java.io.Closeable;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;

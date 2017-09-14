@@ -1,8 +1,8 @@
-connection.arguments=
-connection.gradle.distribution=GRADLE_DISTRIBUTION(WRAPPER)
-connection.java.home=null
-connection.jvm.arguments=
-connection.project.dir=
+#Sun Sep 10 06:10:50 CST 2017
 derived.resources=.gradle,build
+connection.java.home=null
+connection.arguments=
 eclipse.preferences.version=1
+connection.jvm.arguments=
 project.path=\:
+connection.project.dir=
