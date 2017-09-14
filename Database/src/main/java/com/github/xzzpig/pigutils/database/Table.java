@@ -28,7 +28,7 @@ public class Table {
     }
 
     public Table delete() throws SQLException {
-        db.execSql("DELETE FROM " + name, null);
+        db.execSql("DELETE FROM \"" + name + "\"", null);
         return this;
     }
 
@@ -55,18 +55,18 @@ public class Table {
                 wheresb.append(',').append(entry.getKey()).append(" = ").append(str);
             j++;
         }
-        db.execSql("DELETE FROM " + name + " WHERE " + wheresb, objs);
+        db.execSql("DELETE FROM \"" + name + "\" WHERE " + wheresb, objs);
         return this;
     }
 
     public Table delete(@NotNull String where) throws SQLException {
-        db.execSql("DELETE FROM " + name + " WHERE " + where, null);
+        db.execSql("DELETE FROM \"" + name + "\" WHERE " + where, null);
         return this;
     }
 
     public Table drop() throws SQLException {
-        System.out.println("DROP TABLE " + name);
-        db.getConnection().prepareStatement("DROP TABLE " + name).execute();
+        System.out.println("DROP TABLE \"" + name + "\"");
+        db.getConnection().prepareStatement("DROP TABLE \"" + name + "\"").execute();
         return this;
     }
 
@@ -92,7 +92,7 @@ public class Table {
     }
 
     public Table insert(Map<String, Object> map) throws SQLException {
-        StringBuilder sb = new StringBuilder("INSERT INTO ").append(name);
+        StringBuilder sb = new StringBuilder("INSERT INTO \"").append(name).append('\"');
         StringBuilder key = new StringBuilder();
         StringBuilder value = new StringBuilder();
         int j = 0;
@@ -118,6 +118,7 @@ public class Table {
                 value.append(str);
             else
                 value.append(",").append(str);
+            j++;
         }
         sb.append('(').append(key).append(')').append(" VALUES (").append(value).append(");");
         db.execSql(sb.toString(), objs);
@@ -125,8 +126,8 @@ public class Table {
     }
 
     public Table insert(Object... values) throws SQLException {
-        StringBuffer sb = new StringBuffer("INSERT INTO ");
-        sb.append(name).append(" VALUES (");
+        StringBuffer sb = new StringBuffer("INSERT INTO \"");
+        sb.append(name).append('\"').append(" VALUES (");
         List<Object> objs = new ArrayList<>();
         DataUtils.forEachWithIndex(values, (obj, i) -> {
             String str;
@@ -156,7 +157,7 @@ public class Table {
     }
 
     public Table update(Map<String, Object> map, String where) throws SQLException {
-        StringBuffer sb = new StringBuffer("UPDATE " + name + " SET ");
+        StringBuffer sb = new StringBuffer("UPDATE \"" + name + "\" SET ");
         StringBuilder sets = new StringBuilder();
 
         int j = 0;
@@ -212,7 +213,7 @@ public class Table {
     public Table queryConstruct() {
         PreparedStatement pst = null;
         try {
-            pst = getDatabase().getConnection().prepareStatement("select * from " + getName() + " where 1=2");
+            pst = getDatabase().getConnection().prepareStatement("select * from \"" + getName() + "\" where 1=2");
             ResultSetMetaData rsd = pst.executeQuery().getMetaData();
             TableConstruct construct = new TableConstruct(this);
             DatabaseMetaData dbMeta = getDatabase().getConnection().getMetaData();

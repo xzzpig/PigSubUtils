@@ -125,7 +125,7 @@ public class Database implements Closeable {
 	}
 
 	public boolean isTableExists(@NotNull String tableName) {
-		if (tableName == null)
+		if (tableNames == null)
 			getAllTableNames();
 		return tableNames.contains(tableName);
 	}
