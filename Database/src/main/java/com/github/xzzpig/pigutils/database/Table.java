@@ -165,20 +165,13 @@ public class Table {
         for (Entry<String, Object> entry : map.entrySet()) {
             Object obj = entry.getValue();
             String str;
-            // if (obj.getClass() == DBFieldType.Blob.targetClazz) {
             objs.add(obj);
             str = "?";
-            // } else if (obj.getClass() == DBFieldType.Int.targetClazz) {
-            // str = "" + obj;
-            // } else if (obj.getClass() == DBFieldType.Double.targetClazz) {
-            // str = "" + obj;
-            // } else {
-            // str = "\"" + obj + "\"";
-            // }
             if (j == 0)
                 sets.append(entry.getKey()).append(" = ").append(str);
             else
                 sets.append(',').append(entry.getKey()).append(" = ").append(str);
+            j++;
         }
         if (where != null)
             sb.append(sets).append("WHERE ").append(where);
