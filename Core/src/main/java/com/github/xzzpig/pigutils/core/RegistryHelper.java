@@ -2,7 +2,7 @@ package com.github.xzzpig.pigutils.core;
 
 import com.github.xzzpig.pigutils.annoiation.API;
 import com.github.xzzpig.pigutils.annoiation.NotNull;
-import com.sun.istack.internal.Nullable;
+import com.github.xzzpig.pigutils.annoiation.Nullable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
