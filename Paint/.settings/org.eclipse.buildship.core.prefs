@@ -1,4 +1,4 @@
-#Sun Sep 10 06:10:52 CST 2017
+#Fri Oct 13 21:49:30 CST 2017
 connection.arguments=
 containers=org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/
 connection.jvm.arguments=
@@ -8,5 +8,5 @@ natures=org.eclipse.jdt.core.javanature
 eclipse.preferences.version=1
 connection.java.home=null
 derived.resources=.gradle,build
-project.path=\:Paint
 connection.gradle.distribution=GRADLE_DISTRIBUTION(WRAPPER)
+project.path=\:Paint

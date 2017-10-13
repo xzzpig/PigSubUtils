@@ -76,11 +76,9 @@ public class RegistryHelper {
     public static void addUserPath(@NotNull String path) throws IOException {
         String upath = getUserPath();
         path = upath + ";" + path + ";";
-        path.replace(";;", ";");
+        while(path.contains(";;")){
+            path = path.replace(";;", ";");
+        }
         setValue("HKEY_CURRENT_USER\\Environment", "Path", null, path);
-    }
-
-    public static void main(String[] args) throws IOException, InterruptedException {
-        addUserPath("???");
     }
 }
